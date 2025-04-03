@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Stakeholder Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With:</h2>
+        <!-- Added data-name attribute for easier name lookup -->
+        <button onclick="startConversation('sp', 'Superintendent of Police (SP)')">Superintendent of Police (SP)</button>
+        <button onclick="startConversation('dcpo', 'Child Protection Officer (DCPO)')">Child Protection Officer (DCPO)</button>
+        <button onclick="startConversation('cyber_insp', 'Cyber Cell Inspector')">Cyber Cell Inspector</button>
+        <button onclick="startConversation('ps_home', 'Principal Secretary (Home)')">Principal Secretary (Home)</button>
+        <button onclick="startConversation('ngo_rep', 'NGO Representative')">NGO Representative</button>
+    </div>
+
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Online</span>
+        </div>
+        <div id="chat-messages">
+            <!-- Chat messages will appear here -->
+        </div>
+        <!-- Loading dots element -->
+        <div id="loading-dots" class="hidden">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="chat-input">
+            <!-- Input field shows simulated typing -->
+            <input type="text" id="message-input" placeholder="Click Send for your next message..." readonly>
+            <button id="send-button" disabled>
+                <!-- Simple Send Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
