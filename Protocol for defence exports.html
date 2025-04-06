@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DC Chat - Strategic Trade</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling on the body itself */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #DADADA; /* Lighter grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center the container vertically */
+            padding: 0; /* Remove padding */
+            margin: 0;
+        }
+
+        /* Stakeholder Selection Screen */
+        #stakeholder-selection {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 90%; /* Limit width on larger screens */
+            width: 350px; /* Fixed width */
+            z-index: 10; /* Ensure it's above chat */
+            position: absolute; /* Position it */
+        }
+
+        #stakeholder-selection h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        #stakeholder-selection button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 1em;
+            background-color: #075e54;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #stakeholder-selection button:hover {
+            background-color: #128c7e;
+        }
+
+        /* Chat Container - Mobile View */
+        #chat-container {
+            width: 100%;
+            height: 100%; /* Full height */
+            max-width: 450px; /* Max width for larger screens */
+            background-color: #e5ddd5; /* WhatsApp background color */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Crucial for fixed header/footer */
+            border: 1px solid #ccc;
+            position: relative; /* Needed for absolute positioned selection */
+        }
+
+        /* Chat Header */
+        #chat-header {
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #054e46;
+            flex-shrink: 0; /* Prevent header shrinking */
+            position: sticky; /* Keep header at top (though container handles scroll) */
+            top: 0;
+            z-index: 5;
+        }
+
+        #back-button {
+            font-size: 1.5em;
+            margin-right: 15px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        #stakeholder-name {
+            flex-grow: 1;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        #chat-header .status {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #dcf8c6;
+            margin-left: 10px;
+        }
+
+        /* Chat Messages Area */
+        #chat-messages {
+            flex-grow: 1; /* Takes up remaining vertical space */
+            padding: 15px 10px; /* More padding */
+            overflow-y: auto; /* Enable scrolling */
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Optional background */
+            background-color: #E5DDD5; /* Fallback color */
+            background-size: contain; /* Adjust as needed */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Individual Message Bubbles */
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px; /* Reduced margin */
+            max-width: 85%; /* Max width */
+            word-wrap: break-word;
+            clear: both;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            position: relative;
+            font-size: 0.95em; /* Slightly smaller font */
+        }
+
+        .user-message {
+            background-color: #dcf8c6; /* WhatsApp green bubble */
+            margin-left: auto; /* Align right */
+            align-self: flex-end; /* Align self to right */
+            border-top-right-radius: 0;
+        }
+
+        .stakeholder-message {
+            background-color: #ffffff; /* White bubble */
+            margin-right: auto; /* Align left */
+            align-self: flex-start; /* Align self to left */
+            border-top-left-radius: 0;
+        }
+
+        /* Loading Dots Styling */
+        #loading-dots {
+            /* Inherits .stakeholder-message styles */
+            display: flex;
+            justify-content: flex-start;
+            padding: 8px 12px; /* Match message padding */
+            margin-bottom: 8px;
+            align-self: flex-start; /* Align left */
+            width: fit-content;
+            min-height: 20px;
+            align-items: center;
+        }
+
+        #loading-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #aaa;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 0.8s infinite alternate;
+        }
+
+        #loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        #loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Input Area Styling */
+        #chat-input {
+            display: flex;
+            padding: 8px 10px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            flex-shrink: 0; /* Prevent input area shrinking */
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            margin-right: 8px;
+            font-size: 1em; /* Standard font size */
+            background-color: #fff;
+            resize: none;
+            line-height: 1.4;
+            color: #333; /* Color for typed text */
+        }
+
+        #message-input[readonly] {
+             background-color: #fff;
+             cursor: default;
+             color: #333; /* Ensure text is visible */
+        }
+        #message-input::placeholder {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9em; /* Slightly smaller placeholder */
+        }
+
+        #send-button {
+            padding: 0;
+            width: 44px;
+            height: 44px;
+            background-color: #128c7e; /* Send button color */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        #send-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #send-button:hover:not(:disabled) { background-color: #075e54; }
+        #send-button:disabled {
+            background-color: #99cec9; /* Lighter green when disabled */
+            cursor: not-allowed;
+        }
+
+        /* Utility class */
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Stakeholder Selection Screen -->
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With:</h2>
+        <button onclick="startConversation('ps_ic', 'Principal Secretary (Industries & Commerce)')">Principal Secretary (Industries & Commerce)</button>
+        <button onclick="startConversation('ceo_comp', 'CEO, Precision Components Pvt. Ltd.')">CEO, Precision Components</button>
+        <button onclick="startConversation('gm_dic', 'GM, District Industries Centre (DIC)')">GM, District Industries Centre (DIC)</button>
+    </div>
+
+    <!-- Chat Screen -->
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Online</span>
+        </div>
+        <div id="chat-messages">
+            <!-- Chat messages will appear here -->
+        </div>
+        <!-- Loading dots element -->
+        <div id="loading-dots" class="hidden stakeholder-message">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="chat-input">
+            <input type="text" id="message-input" placeholder="Click Send for your next message..." readonly>
+            <button id="send-button" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Conversation Data ---
+        const conversations = {
+            ps_ic: [
+                { sender: 'dc', text: "Good morning, Ma'am. Productive week?" },
+                { sender: 'stakeholder', text: "Good morning, Collector. Yes, quite busy. What is it?" },
+                { sender: 'dc', text: "Ma'am, reviewing MEA's clarification on HAL export news." },
+                { sender: 'stakeholder', text: "Ah yes, the Russia supply claim. MEA strongly denied it." },
+                { sender: 'dc', text: "Yes. It showed India's strict export control system." },
+                { sender: 'stakeholder', text: "Correct. We must follow rules for defence exports." },
+                { sender: 'dc', text: "Exports are growing. Target is ₹50,000 Cr by 2029." },
+                { sender: 'stakeholder', text: "Yes, a big target. Recent ₹23,622 Cr shows good progress." },
+                { sender: 'stakeholder', text: "The state must support this national goal." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Ma'am, how can districts help? Align promotion with rules?" },
+                { sender: 'stakeholder', text: "Good question. Help potential exporters know rules and chances." },
+                { sender: 'stakeholder', text: "This includes even small companies in your district." }, // Consecutive stakeholder
+                { sender: 'dc', text: "We have many engineering units here. Some could help defence." },
+                { sender: 'stakeholder', text: "We must find these units. They need to understand SCOMET." },
+                { sender: 'dc', text: "SCOMET: the list of controlled export items? Needs license?" },
+                { sender: 'stakeholder', text: "Yes. It covers military items and 'dual-use' items." },
+                { sender: 'stakeholder', text: "'Dual-use' means items for civilian and possible military use." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Like strong computers or certain chemicals. We control them." }, // Consecutive stakeholder
+                { sender: 'dc', text: "So, firms exporting tech must know SCOMET rules." },
+                { sender: 'stakeholder', text: "Correct. Especially Category 6, the Munitions List." },
+                { sender: 'stakeholder', text: "DDP (Dept. of Defence Production) handles Category 6 licenses." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "DGFT (Directorate General of Foreign Trade) handles other categories." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Does the state help firms understand these rules easily?" },
+                { sender: 'stakeholder', text: "Industries Dept works with DGFT/DDP. We hold workshops." },
+                { sender: 'stakeholder', text: "But we might need more focused help at district level." }, // Consecutive stakeholder
+                { sender: 'dc', text: "I agree, Ma'am. DIC can do more active outreach." },
+                { sender: 'stakeholder', text: "Definitely. DIC should be the first help point for MSMEs." },
+                { sender: 'stakeholder', text: "Ensure DIC officials are fully updated on these rules." }, // Consecutive stakeholder
+                { sender: 'dc', text: "The article mentioned easier licensing and an online portal." },
+                { sender: 'dc', text: "Is this online system working well for businesses?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Mostly yes. DDP's online portal is much faster now." },
+                { sender: 'stakeholder', text: "Digital signatures and processing help speed things up." }, // Consecutive stakeholder
+                { sender: 'dc', text: "That is good news for our local businesses." },
+                { sender: 'stakeholder', text: "But checking compliance is still very strict." },
+                { sender: 'stakeholder', text: "The 'End User Certificate' (EUC) is very important." }, // Consecutive stakeholder
+                { sender: 'dc', text: "EUC confirms the final buyer and the item's use?" },
+                { sender: 'stakeholder', text: "Exactly. It stops items from going to wrong hands." },
+                { sender: 'stakeholder', text: "Rules eased slightly for tech transfer to Wassenaar countries." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Please explain the Wassenaar Arrangement simply, Ma'am." },
+                { sender: 'stakeholder', text: "It's a group of countries, including India." },
+                { sender: 'stakeholder', text: "They cooperate on responsible export of arms/dual-use items." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Easier EUC for tech transfer to trusted partners is logical." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Understood. Being part of Wassenaar, MTCR, Australia Group helps." },
+                { sender: 'stakeholder', text: "Precisely. It builds global trust for our exports." },
+                { sender: 'stakeholder', text: "Getting membership was hard. We must follow the standards." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Ma'am, about the HAL report, does such news create issues?" },
+                { sender: 'stakeholder', text: "It can cause doubts or extra checks for our firms." },
+                { sender: 'stakeholder', text: "So, MEA's quick, factual reply was very important." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "It confirmed our strong control system exists." }, // Consecutive stakeholder
+                { sender: 'dc', text: "The article also noted India's neutral stance in conflicts." },
+                { sender: 'dc', text: "Like not supplying weapons to Ukraine/Russia or artillery to Israel." }, // Consecutive DC
+                { sender: 'stakeholder', text: "That's vital. Our foreign policy guides export decisions." },
+                { sender: 'stakeholder', text: "We export responsibly, not just for profit." }, // Consecutive stakeholder
+                { sender: 'dc', text: "This responsible image matters to the public too." },
+                { sender: 'stakeholder', text: "Absolutely. We aim for partnerships and growth, ethically." },
+                { sender: 'dc', text: "What specific support should district admin provide now?" },
+                { sender: 'stakeholder', text: "1. Find potential local defence/dual-use makers." },
+                { sender: 'stakeholder', text: "2. Hold DIC drives on SCOMET, licenses, export schemes." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "3. Connect industry with state/central agencies (DGFT/DDP)." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "4. Tell us about local firms' export problems." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Understood, Ma'am. I will task GM, DIC immediately." },
+                { sender: 'dc', text: "We can plan a district seminar on this soon." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Good. Also link it to 'Make in India'." },
+                { sender: 'stakeholder', text: "Defence exports boost local jobs and manufacturing." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Yes, Ma'am. The Defence Export Promotion Policy is key." },
+                { sender: 'stakeholder', text: "It is the main strategy. Your ground-level work is crucial." },
+                { sender: 'dc', text: "I will focus on this. Thank you for your clear guidance." },
+                { sender: 'stakeholder', text: "Keep me posted, Collector. Ensure firms act responsibly." },
+                { sender: 'dc', text: "Will do, Ma'am. Thank you." }
+             ],
+             ceo_comp: [
+                { sender: 'dc', text: "Good morning, Mr. Verma. Hope business is well." },
+                { sender: 'stakeholder', text: "Good morning, Sir. Yes, thank you. Hope you are well too." },
+                { sender: 'dc', text: "All fine. Reading about India's rising defence exports." },
+                { sender: 'dc', text: "Over ₹23,000 crore now. Very good growth." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes, Sir. It encourages companies like ours." },
+                { sender: 'stakeholder', text: "We are also exploring export markets now." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Excellent news. Is the government policy helpful?" },
+                { sender: 'stakeholder', text: "Mostly yes, Sir. 'Make in India' focus helps." },
+                { sender: 'stakeholder', text: "Simpler license rules for components are good." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Good. Heard about the DDP online portal for export permits?" },
+                { sender: 'stakeholder', text: "Yes Sir. Used it for some queries. It is faster." },
+                { sender: 'stakeholder', text: "Applying online and getting updates saves much time." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Any problems using the online portal?" },
+                { sender: 'stakeholder', text: "Understanding documents needed took time at first." },
+                { sender: 'stakeholder', text: "Uploading technical files can sometimes fail. But improving." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Noted. How about understanding SCOMET rules? Clear?" },
+                { sender: 'stakeholder', text: "That is the most complex part, Sir." },
+                { sender: 'stakeholder', text: "We make precise metal parts. Some may be 'dual-use'." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Finding the exact SCOMET category needs careful check." }, // Consecutive stakeholder
+                { sender: 'dc', text: "I understand. 'Dual-use' items have civilian and military uses." },
+                { sender: 'dc', text: "So DGFT controls them strictly. Needs license." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Exactly, Sir. We must be 100% compliant." },
+                { sender: 'stakeholder', text: "Mistakes can cause big losses and harm our name." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Right. Compliance first. Goal is stopping WMD spread." },
+                { sender: 'dc', text: "Even small parts can be sensitive if misused." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We know this, Sir. We always demand clear EUCs." },
+                { sender: 'dc', text: "EUCs (End User Certificates) are key. Shows final user/use." },
+                { sender: 'dc', text: "Article said EUC rules eased for tech transfer to Wassenaar nations." }, // Consecutive DC
+                { sender: 'dc', text: "Does this change affect your component exports?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Not directly now, Sir. We export parts, not tech know-how." },
+                { sender: 'stakeholder', text: "But it shows govt wants simpler process with trusted nations." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Understood. India is in Wassenaar, MTCR, Australia Group." },
+                { sender: 'stakeholder', text: "Yes, Sir. This builds India's image as a reliable supplier." },
+                { sender: 'dc', text: "The recent news report about HAL and Russia..." },
+                { sender: 'dc', text: "Does that kind of news affect your foreign deals?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Foreign partners might get cautious. Ask more questions." },
+                { sender: 'stakeholder', text: "But MEA's strong reply helps counter negative views." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "It highlights India's strict control systems." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Good point. Managing perception is important." },
+                { sender: 'dc', text: "Are you using the Defence Export Promotion Scheme?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Exploring it, Sir. It helps in marketing products abroad." },
+                { sender: 'stakeholder', text: "Events like Defence Expo help us showcase our items." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Article said PSUs get specific regions for marketing." },
+                { sender: 'dc', text: "Does this help or compete with private firms like you?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "It's mixed, Sir. Sometimes PSUs help open new markets." },
+                { sender: 'stakeholder', text: "Sometimes we compete directly. Market is growing though." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Government focus on private firms is also increasing." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Yes, private sector role is growing, article said." },
+                { sender: 'dc', text: "What is your biggest hurdle for increasing exports?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Getting loans easily for export orders is one challenge." },
+                { sender: 'stakeholder', text: "Meeting different countries' specific rules is another." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Need continuous R&D investment to stay competitive." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Do you work with the District Industries Centre (DIC)?" },
+                { sender: 'stakeholder', text: "Yes Sir. We connect with DIC for state schemes." },
+                { sender: 'dc', text: "I am asking DIC to focus on SCOMET info drives." },
+                { sender: 'dc', text: "Maybe hold a workshop for local industries?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "That would be very useful, Sir!" },
+                { sender: 'stakeholder', text: "If DGFT/DDP experts join, it would be great." }, // Consecutive stakeholder
+                { sender: 'stakeholder', text: "Clearing SCOMET doubts would help us a lot." }, // Consecutive stakeholder
+                { sender: 'dc', text: "I will arrange that. We want to help local firms grow." },
+                { sender: 'dc', text: "Grow exports, but safely and following all rules." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We appreciate the support, Sir. We follow ethical ways." },
+                { sender: 'stakeholder', text: "We want to contribute to national goals significantly." }, // Consecutive stakeholder
+                { sender: 'dc', text: "I am sure you can. Keep up the good work, Mr. Verma." },
+                { sender: 'dc', text: "Inform my office about any local admin issues you face." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Thank you very much for your time and support, Sir." }
+             ],
+             gm_dic: [
+                { sender: 'dc', text: "GM Sahib, morning. Discussing local firms in defence exports." },
+                { sender: 'stakeholder', text: "Good morning, Sir. Yes, Sir. Ready for instructions." },
+                { sender: 'dc', text: "National defence exports are rising fast. Big target ahead." },
+                { sender: 'stakeholder', text: "Yes, Sir. We received circulars on export promotion policy." },
+                { sender: 'dc', text: "Good. But we need to reach out actively now." },
+                { sender: 'dc', text: "How many potential defence suppliers are here? Any list?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, we have MSME database. But need survey for defence potential." },
+                { sender: 'stakeholder', text: "We have not done a specific defence supplier survey yet." }, // Consecutive stakeholder
+                { sender: 'dc', text: "We must do it. Task 1: Map local firms." },
+                { sender: 'dc', text: "Find firms (engg, electronics etc) that can supply defence." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Okay Sir. We will start mapping based on their products." },
+                { sender: 'dc', text: "Task 2: Create awareness. MSMEs may not know rules." },
+                { sender: 'dc', text: "Especially SCOMET rules. They look complex." }, // Consecutive DC
+                { sender: 'stakeholder', text: "True Sir. SCOMET is new for many small units." },
+                { sender: 'dc', text: "We must simplify SCOMET explanation for them." },
+                { sender: 'dc', text: "Explain 'dual-use': normal item, possible military use." }, // Consecutive DC
+                { sender: 'dc', text: "Give local examples like special pumps or software." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Right, Sir. We can make simple guides or hold meetings." },
+                { sender: 'dc', text: "Exactly. Plan a workshop. Invite experts (DGFT/DDP)." },
+                { sender: 'dc', text: "Also invite successful local exporters like Mr. Verma's firm." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Excellent idea, Sir. Local success stories motivate others." },
+                { sender: 'dc', text: "Our aim is twofold: Promote 'Make in India' for defence." },
+                { sender: 'dc', text: "AND ensure firms follow strategic trade controls strictly." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Understood Sir. Promotion plus clear rule guidance." },
+                { sender: 'stakeholder', text: "We must help them avoid any compliance mistakes." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Yes. Controls stop WMD spread, manage arms flow." },
+                { sender: 'dc', text: "Communicate why these rules are extremely important." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We will explain the 'why', Sir. Not just list rules." },
+                { sender: 'dc', text: "Also tell them about support systems available now." },
+                { sender: 'dc', text: "Like the online export portal and promotion schemes." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We can guide them to access these resources, Sir." },
+                { sender: 'stakeholder', text: "Maybe DIC can have a special helpdesk for this?" }, // Consecutive stakeholder
+                { sender: 'dc', text: "Good idea. How about bank coordination for loans?" },
+                { sender: 'stakeholder', text: "We meet banks regularly, Sir. Can discuss export finance." },
+                { sender: 'dc', text: "Please do. Also connect with nearby defence PSUs/big firms." },
+                { sender: 'dc', text: "Ask them to buy more from local MSMEs." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We can arrange vendor meetings, Sir. Link MSMEs to buyers." },
+                { sender: 'dc', text: "Article noted India's policy neutrality in conflicts." },
+                { sender: 'dc', text: "This builds our 'responsible exporter' image globally." }, // Consecutive DC
+                { sender: 'dc', text: "Local firms should understand this ethical part too." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes, Sir. We will highlight responsible business practice." },
+                { sender: 'dc', text: "Also mention India's global commitments." },
+                { sender: 'dc', text: "Like membership in MTCR, Wassenaar, Australia Group." }, // Consecutive DC
+                { sender: 'dc', text: "It shows India follows international rules." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Will include these points, Sir. Shows the big picture." },
+                { sender: 'dc', text: "So, action plan: Map firms. Hold workshop. Make guides." },
+                { sender: 'dc', text: "DIC helpdesk. Coordinate with banks. Arrange vendor meets." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes, Sir. Very clear plan. We will start work now." },
+                { sender: 'stakeholder', text: "I will share the first mapping report in one week." }, // Consecutive stakeholder
+                { sender: 'dc', text: "Make sure the information is very practical." },
+                { sender: 'dc', text: "Focus on how they comply, how they get help." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Absolutely, Sir. Practical guidance is the main goal." },
+                { sender: 'dc', text: "Keep me updated on the workshop plans." },
+                { sender: 'dc', text: "Let's make our district a leader in this sector." }, // Consecutive DC
+                { sender: 'stakeholder', text: "We will try our best, Sir. Thank you for the direction." }
+             ]
+        };
+
+        // --- Global Variables ---
+        let currentStakeholderKey = null;
+        let currentMessageIndex = 0;
+        let isTypingOrLoading = false;
+        let typingIntervalId = null;
+
+        // --- DOM References ---
+        const stakeholderSelectionDiv = document.getElementById('stakeholder-selection');
+        const chatContainerDiv = document.getElementById('chat-container');
+        const chatHeaderName = document.getElementById('stakeholder-name');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingDots = document.getElementById('loading-dots');
+
+        // --- Constants ---
+        const TYPING_SPEED_MS = 35;
+        const STAKEHOLDER_RESPONSE_DELAY_MS = 2000; // Initial delay after DC sends
+        const STAKEHOLDER_CONSECUTIVE_DELAY_MS = 2000; // Delay *between* consecutive stakeholder messages
+
+        // --- Functions ---
+
+        function scrollToBottom() {
+            // Slight delay to allow DOM update before scrolling
+            setTimeout(() => {
+                 chatMessagesDiv.scrollTo({ top: chatMessagesDiv.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function displayMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'dc' ? 'user-message' : 'stakeholder-message');
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatMessagesDiv.appendChild(messageDiv);
+            // Remove loading dots if they were just before this message
+            if (loadingDots.previousSibling === messageDiv.previousSibling) {
+                 loadingDots.classList.add('hidden');
+            }
+            scrollToBottom();
+        }
+
+        function typeMessageInInput(text, callback) {
+            let charIndex = 0;
+            messageInput.value = '';
+            messageInput.placeholder = 'Typing...';
+            isTypingOrLoading = true;
+            sendButton.disabled = true;
+
+            if (typingIntervalId) clearInterval(typingIntervalId);
+
+            typingIntervalId = setInterval(() => {
+                if (charIndex < text.length) {
+                    messageInput.value += text.charAt(charIndex);
+                    charIndex++;
+                } else {
+                    clearInterval(typingIntervalId);
+                    typingIntervalId = null;
+                    setTimeout(() => {
+                        callback(text); // Execute the callback (onDcTypingComplete)
+                    }, 150); // Short pause after typing
+                }
+            }, TYPING_SPEED_MS);
+        }
+
+        function onDcTypingComplete(typedText) {
+            displayMessage('dc', typedText);
+            messageInput.value = ''; // Clear input bar AFTER displaying
+            messageInput.placeholder = "Waiting for response..."; // Default placeholder
+
+            // Check the next message to see if stakeholder replies
+            const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+
+            if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                // Show loading dots and trigger stakeholder sequence
+                chatMessagesDiv.appendChild(loadingDots); // Append loading dots element
+                loadingDots.classList.remove('hidden');
+                scrollToBottom();
+                setTimeout(processStakeholderSequence, STAKEHOLDER_RESPONSE_DELAY_MS); // Wait before first reply
+            } else {
+                // If next is DC or end of convo, prepare for DC's turn immediately
+                prepareForNextDcTurn();
+            }
+        }
+
+        function processStakeholderSequence() {
+             // Remove loading dots only if they are currently visible and the last element
+             if (!loadingDots.classList.contains('hidden') && chatMessagesDiv.lastChild === loadingDots) {
+                loadingDots.classList.add('hidden');
+             }
+
+
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                prepareForNextDcTurn(); // End of conversation or error state
+                return;
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+
+            if (messageData.sender === 'stakeholder') {
+                isTypingOrLoading = true;
+                sendButton.disabled = true;
+
+                // Display the stakeholder message
+                displayMessage('stakeholder', messageData.text);
+                currentMessageIndex++; // Move index *after* displaying
+
+                // Look ahead: Check if the *next* message is ALSO from the stakeholder
+                const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+
+                if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                    // Schedule the next stakeholder message after a delay
+                    setTimeout(processStakeholderSequence, STAKEHOLDER_CONSECUTIVE_DELAY_MS);
+                } else {
+                    // If next is DC or end, prepare for DC's turn
+                    prepareForNextDcTurn();
+                }
+            } else {
+                 // If the current message is not from the stakeholder (it's DC or end),
+                 // stop the stakeholder sequence and prepare for DC's turn.
+                 prepareForNextDcTurn();
+            }
+        }
+
+        function prepareForNextDcTurn() {
+            isTypingOrLoading = false; // DC is no longer typing, stakeholder sequence finished
+             // Ensure loading dots are hidden and potentially removed from flow
+             if (!loadingDots.classList.contains('hidden')) {
+                 loadingDots.classList.add('hidden');
+             }
+
+
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                // Conversation ended
+                messageInput.placeholder = "Conversation ended.";
+                sendButton.disabled = true;
+            } else {
+                // Check whose turn is next based on the current index
+                const nextMessageData = conversations[currentStakeholderKey][currentMessageIndex];
+                if (nextMessageData.sender === 'dc') {
+                    // It's DC's turn
+                    messageInput.placeholder = "Click Send for your next message...";
+                    sendButton.disabled = false; // Enable send button
+                } else {
+                    // It's stakeholder's turn again (shouldn't happen here if logic is right)
+                    // This might occur if the conversation starts with the stakeholder
+                    messageInput.placeholder = "Waiting for response...";
+                    sendButton.disabled = true;
+                    // Start stakeholder sequence if needed (e.g., conversation start)
+                    if (currentMessageIndex === 0 && nextMessageData.sender === 'stakeholder') {
+                         setTimeout(processStakeholderSequence, 500); // Start initial stakeholder turn
+                    } else {
+                        console.warn("PrepareForNextDcTurn called when stakeholder is next unexpectedly.");
+                    }
+                }
+            }
+             scrollToBottom(); // Ensure view is correct after state change
+        }
+
+        function handleSendClick() {
+            // Prevent action if already busy or not DC's turn
+            if (isTypingOrLoading || !currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length || conversations[currentStakeholderKey][currentMessageIndex].sender !== 'dc') {
+                console.log("Send clicked but conditions not met:", {isTypingOrLoading, currentStakeholderKey, currentMessageIndex});
+                return;
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+            currentMessageIndex++; // Increment index *before* typing starts for the *current* message
+
+            // Start the typing simulation
+            typeMessageInInput(messageData.text, onDcTypingComplete);
+        }
+
+        function startConversation(stakeholderKey, stakeholderName) {
+            const conversationData = conversations[stakeholderKey];
+            if (!conversationData || conversationData.length === 0) {
+                console.error("Conversation data not found or empty for key:", stakeholderKey);
+                alert("Error: Could not load conversation data.");
+                return;
+            }
+            currentStakeholderKey = stakeholderKey;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+
+            // Update UI
+            stakeholderSelectionDiv.classList.add('hidden');
+            chatContainerDiv.classList.remove('hidden');
+            chatHeaderName.textContent = stakeholderName;
+            chatMessagesDiv.innerHTML = ''; // Clear previous messages
+            messageInput.value = '';
+            messageInput.readOnly = true; // Keep it readonly except during typing simulation
+            loadingDots.classList.add('hidden');
+
+            // Determine the first turn and set initial state
+            const firstMessage = conversationData[0];
+            if (firstMessage.sender === 'dc') {
+                prepareForNextDcTurn(); // Prepare for DC to click Send first
+            } else if (firstMessage.sender === 'stakeholder') {
+                 // If stakeholder starts, disable send, set placeholder, and start sequence
+                 sendButton.disabled = true;
+                 messageInput.placeholder = "Waiting for response...";
+                 isTypingOrLoading = true; // Set busy flag
+                 setTimeout(processStakeholderSequence, 500); // Start after brief pause
+            }
+             scrollToBottom(); // Scroll after setup
+        }
+
+        function goBackToSelection() {
+            chatContainerDiv.classList.add('hidden');
+            stakeholderSelectionDiv.classList.remove('hidden');
+            currentStakeholderKey = null;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+            if (typingIntervalId) {
+                clearInterval(typingIntervalId);
+                typingIntervalId = null;
+            }
+             // Clear chat messages when going back
+             chatMessagesDiv.innerHTML = '';
+             messageInput.placeholder = 'Click Send for your next message...';
+             sendButton.disabled = true;
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendClick);
+
+        // --- Initial Setup ---
+        // Selection screen visible by default, chat hidden
+        chatContainerDiv.classList.add('hidden');
+
+    </script>
+</body>
+</html>
