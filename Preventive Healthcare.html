@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Stakeholder Chat - NCD Prevention</title>
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #DADADA; /* Lighter grey background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* --- Stakeholder Selection --- */
+        #stakeholder-selection {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px; /* Limit width */
+        }
+
+        #stakeholder-selection h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #stakeholder-selection button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #stakeholder-selection button:hover {
+            background-color: #128c7e; /* Lighter Green */
+        }
+
+        /* --- Chat Container --- */
+        #chat-container {
+            width: 90%;
+            max-width: 400px; /* Narrower for mobile feel */
+            height: 85vh; /* Fixed height */
+            max-height: 700px; /* Max height */
+            background-color: #e5ddd5; /* WhatsApp chat background color */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* --- Chat Header --- */
+        #chat-header {
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center; /* Center items vertically */
+            border-bottom: 1px solid #054e46;
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        #back-button {
+            font-size: 1.5em;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        #stakeholder-name {
+            flex-grow: 1; /* Take available space */
+            text-align: left; /* Align name to left */
+        }
+
+        #chat-header .status {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #dcf8c6; /* Light green for status */
+            margin-left: 10px; /* Space before status */
+        }
+
+        /* --- Chat Messages Area --- */
+        #chat-messages {
+            flex-grow: 1; /* Takes up remaining vertical space */
+            padding: 15px;
+            overflow-y: auto; /* Enable scrolling */
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Optional background */
+            background-size: contain;
+            display: flex;
+            flex-direction: column; /* Messages stack vertically */
+        }
+
+        /* --- Message Bubbles --- */
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 80%; /* Slightly wider bubbles */
+            word-wrap: break-word;
+            clear: both;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            position: relative; /* Needed for pseudo-elements if used */
+        }
+
+        .user-message {
+            background-color: #dcf8c6; /* WhatsApp green bubble */
+            margin-left: auto;
+            float: right; /* Align right */
+            border-top-right-radius: 0; /* Characteristic notch */
+        }
+
+        .stakeholder-message {
+            background-color: #ffffff; /* White bubble */
+            margin-right: auto;
+            float: left; /* Align left */
+            border-top-left-radius: 0; /* Characteristic notch */
+        }
+        /* Handle list items inside bubbles */
+        .message ul, .message ol {
+            padding-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+         .message li {
+             margin-bottom: 3px;
+         }
+
+        /* --- Loading Dots --- */
+        #loading-dots {
+            /* Inherits .stakeholder-message styles */
+            display: flex; /* Use flex for alignment */
+            justify-content: flex-start;
+            padding: 5px 10px; /* Reduced padding */
+            margin-bottom: 10px;
+            float: left;
+            clear: both;
+            width: fit-content; /* Fit content width */
+            min-height: 20px; /* Ensure height */
+            align-items: center; /* Vertically align dots */
+        }
+
+        #loading-dots span {
+            display: inline-block;
+            width: 6px; /* Smaller dots */
+            height: 6px;
+            background-color: #aaa;
+            border-radius: 50%;
+            margin: 0 2px; /* Adjust spacing */
+            animation: bounce 0.8s infinite alternate;
+        }
+
+        #loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        #loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px); /* Adjusted bounce height */
+            }
+        }
+
+        /* --- Input Area --- */
+        #chat-input {
+            display: flex;
+            padding: 8px 10px; /* Slightly reduced padding */
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            flex-shrink: 0; /* Prevent input area shrinking */
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px 15px; /* Adjusted padding */
+            border: none; /* Remove border */
+            border-radius: 20px; /* Rounded corners */
+            margin-right: 8px; /* Reduced margin */
+            font-size: 15px;
+            background-color: #fff;
+            resize: none;
+            line-height: 1.4;
+            color: #333; /* Ensure typed text is visible */
+        }
+
+        #message-input[readonly] {
+             background-color: #fff; /* Keep white when readonly for typing effect */
+             cursor: default;
+             color: #333; /* Ensure text is visible */
+        }
+        #message-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        #send-button {
+            padding: 0; /* Remove padding if using SVG */
+            width: 44px; /* Slightly larger button */
+            height: 44px;
+            background-color: #128c7e; /* Lighter Green */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+            flex-shrink: 0; /* Prevent button shrinking */
+        }
+        #send-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #send-button:hover:not(:disabled) {
+             background-color: #075e54; /* Darker Green */
+        }
+        #send-button:disabled {
+            background-color: #99cec9; /* Lighter green when disabled */
+            cursor: not-allowed;
+        }
+
+        /* --- Utility Classes --- */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Stakeholder Selection Screen -->
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With (NCD Prevention):</h2>
+        <button onclick="startConversation('expert', 'Dr. Ananya Sharma (Expert)')">Dr. Ananya Sharma (Expert)</button>
+        <button onclick="startConversation('cmo', 'Chief Medical Officer (CMO)')">Chief Medical Officer (CMO)</button>
+        <button onclick="startConversation('ps_health', 'Principal Secretary (Health)')">Principal Secretary (Health)</button>
+        <button onclick="startConversation('ceo_zp', 'CEO, Zilla Parishad (CEO ZP)')">CEO, Zilla Parishad (CEO ZP)</button>
+        <button onclick="startConversation('deo', 'District Education Officer (DEO)')">District Education Officer (DEO)</button>
+        <button onclick="startConversation('hr_head', 'Corporate HR Head')">Corporate HR Head</button>
+        <button onclick="startConversation('ngo_head', 'NGO Head (Swasthya Samuday)')">NGO Head (Swasthya Samuday)</button>
+    </div>
+
+    <!-- Chat Screen -->
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Online</span>
+        </div>
+        <div id="chat-messages">
+            <!-- Chat messages will appear here -->
+        </div>
+        <!-- Loading dots element -->
+        <div id="loading-dots" class="hidden stakeholder-message">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="chat-input">
+            <!-- Input field shows simulated typing -->
+            <input type="text" id="message-input" placeholder="Click Send for your next message..." readonly>
+            <button id="send-button" disabled>
+                <!-- Simple Send Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Conversation Data (NCD Prevention) ---
+        const conversations = {
+             expert: [ // Phase 1: Briefing from Expert
+                { sender: 'dc', text: "Dr. Sharma, thanks for joining. I read the article on preventive health. Our district NCD data is concerning." },
+                { sender: 'dc', text: "Before I meet my team, I need your expert view. Please explain \"epidemiological transition\" simply." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir. India's main disease pattern changed. Earlier, infections like TB were common killers." },
+                { sender: 'stakeholder', text: "Better sanitation and medicines reduced infections." }, // Consecutive
+                { sender: 'dc', text: "So, other diseases replaced them?" },
+                { sender: 'stakeholder', text: "Yes. Non-Communicable Diseases (NCDs) replaced them. You cannot catch NCDs from others." },
+                { sender: 'stakeholder', text: "Think heart disease, diabetes, cancer, stroke. Also chronic lung diseases like COPD." }, // Consecutive
+                { sender: 'dc', text: "The article calls NCDs a \"silent epidemic\". Why silent?" },
+                { sender: 'stakeholder', text: "NCDs develop slowly. They often show no early symptoms." },
+                { sender: 'stakeholder', text: "People feel fine for years. Meanwhile, high BP or sugar damages their body silently." }, // Consecutive
+                { sender: 'stakeholder', text: "It is not like a sudden fever." }, // Consecutive
+                { sender: 'dc', text: "What is the scale of this problem? The article says NCDs cause 2/3rds of deaths." },
+                { sender: 'stakeholder', text: "Yes Sir. That number is huge. About 5-6 million Indians die from NCDs yearly." },
+                { sender: 'dc', text: "I worry that NCDs affect younger people now. The article mentioned this." },
+                { sender: 'stakeholder', text: "That is a critical point, Sir. NCDs are not just old-age diseases anymore." },
+                { sender: 'stakeholder', text: "We see heart attacks in 30-40 year olds. Young people need dialysis for diabetes. Strokes occur in younger people too." }, // Consecutive
+                { sender: 'dc', text: "This impacts our \"demographic dividend,\" right? Our young workforce drives economic growth." },
+                { sender: 'stakeholder', text: "Exactly. The working-age group is 15-59 years. Sickness in this group reduces productivity." },
+                { sender: 'stakeholder', text: "Sick people cannot work well. This harms the economy significantly." }, // Consecutive
+                { sender: 'dc', text: "The article mentions huge economic losses. It says 5-10% of GDP. How do they calculate this?" },
+                { sender: 'stakeholder', text: "Costs include hospital treatment and medicines. These are direct costs." },
+                { sender: 'stakeholder', text: "It also includes indirect costs. These costs are often larger." }, // Consecutive
+                { sender: 'stakeholder', text: "Indirect costs include lost wages from sickness. People miss work (absenteeism)." }, // Consecutive
+                { sender: 'stakeholder', text: "Early death cuts off earning years. Caregivers might also stop working to help." }, // Consecutive
+                { sender: 'dc', text: "So, spending on prevention is an economic strategy. It is not just a health expense." },
+                { sender: 'stakeholder', text: "Absolutely Sir. Investing in NCD prevention protects our workforce. It reduces future healthcare costs." },
+                { sender: 'stakeholder', text: "This helps achieve economic goals. Like the $5 trillion economy target. Prevention is always cheaper than cure." }, // Consecutive
+                { sender: 'dc', text: "What causes most NCDs? The article lists the main reasons." },
+                { sender: 'stakeholder', text: "Main preventable risk factors are key:"
+                    + "<ul><li>Unhealthy Diets: Too much salt, sugar, bad fats. Not enough fruits, vegetables.</li>"
+                    + "<li>Sedentary Lifestyle: Not enough physical activity. Many jobs involve sitting long hours.</li>"
+                    + "<li>Tobacco Use: Smoking, chewing tobacco cause cancer, heart, lung disease.</li>"
+                    + "<li>Harmful Alcohol Use: Damages liver, heart. Causes some cancers.</li>"
+                    + "<li>Air Pollution: Causes COPD, asthma, lung cancer. Even heart attacks.</li></ul>"
+                }, // Using UL for list
+                { sender: 'dc', text: "The article also mentions genetics. How much can we control genetics?" },
+                { sender: 'stakeholder', text: "Genetics play a role. Some people have higher genetic risk." },
+                { sender: 'stakeholder', text: "But lifestyle choices matter more. Good lifestyle can prevent or delay disease. This works even with family history." }, // Consecutive
+                { sender: 'dc', text: "Article says we can prevent 80% of early heart disease, stroke, diabetes. How?" },
+                { sender: 'stakeholder', text: "We can prevent them by changing lifestyle factors. This shows where to focus efforts." },
+                { sender: 'stakeholder', text: "We need behaviour change. We need healthier environments." }, // Consecutive
+                { sender: 'dc', text: "Let's discuss solutions. What is \"preventive medicine\" for NCDs practically?" },
+                { sender: 'stakeholder', text: "It has several layers or stages:"
+                    + "<ul><li>Primordial Prevention: Stop risk factors from developing. Example: policies reducing salt in food.</li>"
+                    + "<li>Primary Prevention: Control risks in healthy people. Example: Help someone quit smoking. Advise diet/exercise.</li>"
+                    + "<li>Secondary Prevention: Find diseases early through screening. Example: Check BP, blood sugar. Find early cancer.</li>"
+                    + "<li>Tertiary Prevention: Manage existing disease. Prevent complications. Example: Control diabetes to save kidneys.</li></ul>"
+                 }, // Using UL for list
+                { sender: 'stakeholder', text: "The article mainly talks about primary and secondary prevention. These reach many people." }, // Consecutive
+                { sender: 'dc', text: "Okay. Specific actions: Exercise 30 minutes daily?" },
+                { sender: 'stakeholder', text: "Yes, moderate activity like brisk walking. Yoga or sports also help. Consistency is important." },
+                { sender: 'dc', text: "And diet? More fruits, vegetables, proteins? Less sugar, salt, unhealthy fats?" },
+                { sender: 'stakeholder', text: "Yes. This sounds simple but is hard. People need awareness. Healthy food must be available." },
+                { sender: 'stakeholder', text: "Policies like clear food labels help. We must tackle obesity. 22-23% adults are overweight." }, // Consecutive
+                { sender: 'dc', text: "Air pollution as preventive medicine. How can the health sector help here?" },
+                { sender: 'stakeholder', text: "Health sector highlights health impacts. Like lung and heart diseases from pollution." },
+                { sender: 'stakeholder', text: "This strengthens the case for pollution control. Other departments handle control measures. Health data shows the human cost." }, // Consecutive
+                { sender: 'dc', text: "Screenings are vital. Start at age 40? Or earlier if family has history?" },
+                { sender: 'stakeholder', text: "Yes. Regular checks for BP, blood sugar, cholesterol. Also specific cancer screenings." },
+                { sender: 'stakeholder', text: "Mammograms for breast cancer. Pap smears or HPV tests for cervical cancer. Maybe oral/colon cancer checks too." }, // Consecutive
+                { sender: 'dc', text: "Explain \"early detection saves lives\" simply." },
+                { sender: 'stakeholder', text: "Finding high BP early prevents strokes. Simple lifestyle changes or medicine help." },
+                { sender: 'stakeholder', text: "Removing a small polyp stops colon cancer. Catching tiny breast cancer often cures it completely." }, // Consecutive
+                { sender: 'dc', text: "The article mentions technology. Smartphones, wearables, AI. How can these help our district?" },
+                { sender: 'stakeholder', text: "Smartphones can send health messages. Reminders for check-ups or medicines. Apps track diet, exercise." },
+                { sender: 'stakeholder', text: "Wearables track activity, heart rate, sleep. They give people real-time health data." }, // Consecutive
+                { sender: 'stakeholder', text: "AI (Artificial Intelligence) is advanced. AI analyzes large data like screening results. It identifies high-risk people or areas." }, // Consecutive
+                { sender: 'stakeholder', text: "AI can predict NCD trends. AI also helps doctors read scans. Like X-rays or CT scans." }, // Consecutive
+                { sender: 'stakeholder', text: "AI might spot early lung nodules. Or early signs of fatty liver. Humans might miss these signs." }, // Consecutive
+                { sender: 'dc', text: "So AI can generate a \"health risk score\"?" },
+                { sender: 'stakeholder', text: "Yes. AI uses health data, lifestyle, family history. It estimates future NCD risk. This allows early action." },
+                { sender: 'dc', text: "The article says keep tech \"humane and patient-centric\". What does this mean?" },
+                { sender: 'stakeholder', text: "Technology must support, not replace humans. Doctors need empathy and counselling skills." },
+                { sender: 'stakeholder', text: "We must protect patient data privacy. AI predictions should not cause anxiety or bias. Tech should empower patients." }, // Consecutive
+                { sender: 'dc', text: "The article stresses a \"preventive mindset\". What does this mean beyond individuals?" },
+                { sender: 'stakeholder', text: "It means putting health into all policies. A \"Health-in-All-Policies\" approach." },
+                { sender: 'stakeholder', text: "Government must implement NPNCD program well. (NPNCD focuses on Cancer, Diabetes, Heart disease, Stroke)." }, // Consecutive
+                { sender: 'stakeholder', text: "Strengthen Health & Wellness Centres (HWCs). HWCs provide screening and counselling." }, // Consecutive
+                { sender: 'stakeholder', text: "Make policies for food safety, pollution control. Plan cities with parks, walking paths. Add health/nutrition to school lessons." }, // Consecutive
+                { sender: 'stakeholder', text: "Corporates should run wellness programs. Offer healthy canteen food. Give health checks. Provide counsellors." }, // Consecutive
+                { sender: 'stakeholder', text: "Communities can create support groups. Promote local yoga or walking clubs." }, // Consecutive
+                { sender: 'stakeholder', text: "Doctors should shift focus. Promote prevention and screening actively. Not just treat sickness." }, // Consecutive
+                { sender: 'dc', text: "So, it's a whole-of-society approach. HWCs are key for government strategy?" },
+                { sender: 'stakeholder', text: "Yes. Ayushman Bharat-HWCs bring care closer. They offer NCD screening and management. Their success is vital for prevention." },
+                { sender: 'dc', text: "Thank you, Dr. Sharma. This is very clear. Problem scale, economic link, risks. Action steps: lifestyle, screening, pollution. Tech role, mindset shift. I can discuss this with my team now." },
+                { sender: 'stakeholder', text: "Happy to help, Sir. District level implementation makes the real difference." }
+            ],
+            cmo: [
+                { sender: 'dc', text: "CMO Sahab, discussing NCD prevention. The state directive and article emphasize it. Our district numbers seem high." },
+                { sender: 'stakeholder', text: "Yes Sir. We see more hypertension, diabetes. HWC screenings confirm this. It is concerning." },
+                { sender: 'dc', text: "Article says NCDs hit 30-40 year olds. Do HWCs actively screen this age group?" },
+                { sender: 'stakeholder', text: "Sir, guidelines mandate screening 30+. HWCs do opportunistic screening. They also do some targeted outreach." },
+                { sender: 'stakeholder', text: "We need to improve screening coverage." }, // Consecutive
+                { sender: 'dc', text: "Explain \"opportunistic screening\" simply." },
+                { sender: 'stakeholder', text: "Sir, someone visits HWC for fever. CHO also checks BP. CHO asks about NCD risks. Maybe does sugar test." },
+                { sender: 'dc', text: "Okay. And \"targeted outreach\"?" },
+                { sender: 'stakeholder', text: "ASHAs mobilize people over 30. They ask them to visit HWCs. HWCs hold screening camps on specific days." },
+                { sender: 'dc', text: "What are the biggest challenges? For scaling up HWC screening?" },
+                { sender: 'stakeholder', text: "Sir, challenges are:"
+                    + "<ul><li>Manpower: Need well-trained, motivated CHOs. One CHO covers many people sometimes.</li>"
+                    + "<li>Equipment: Need reliable BP machines, glucometers. Need test strips always. Supply issues happen.</li>"
+                    + "<li>Follow-up: Finding high BP/sugar is first step. Ensuring follow-up checks is harder. Getting patients medication is tough.</li>"
+                    + "<li>Awareness: Many feel okay. They see no need for check-ups.</li></ul>"
+                 }, // Using UL for list
+                { sender: 'dc', text: "Article stressed early detection. Let's focus on follow-up. How do we track positive cases from HWCs now?" },
+                { sender: 'stakeholder', text: "Sir, staff record cases in registers. Ideally, they enter data into NCD portal. CHOs, ANMs should follow up." },
+                { sender: 'stakeholder', text: "They do home visits or calls. We refer serious cases to PHC/DH." }, // Consecutive
+                { sender: 'dc', text: "\"Ideally\" means gaps exist. Is tracking really strong? How many positives reach higher care?" },
+                { sender: 'stakeholder', text: "Sir, data entry is improving slowly. It is inconsistent across HWCs. Referral tracking is a weak link." },
+                { sender: 'stakeholder', text: "We need better links between HWCs and hospitals. ABDM framework might help. (ABDM = Ayushman Bharat Digital Mission)." }, // Consecutive
+                { sender: 'dc', text: "Let's prioritize strengthening referral tracking. What about specific cancer screenings? Mammograms, HPV tests at HWCs?" },
+                { sender: 'stakeholder', text: "No Sir. HWCs screen for Hypertension, Diabetes. Also common cancers: Oral, Breast (exam), Cervical (visual check)." },
+                { sender: 'stakeholder', text: "Mammograms need machines at bigger hospitals (DH). HPV tests are not routine at HWCs yet." }, // Consecutive
+                { sender: 'dc', text: "So, HWCs do initial checks for breast/cervical cancer? Then they refer suspects?" },
+                { sender: 'stakeholder', text: "Yes Sir. CHOs/ANMs do Clinical Breast Exam. They do VIA test for cervical cancer. (VIA = Visual Inspection with Acetic Acid). They refer suspected cases upward." },
+                { sender: 'dc', text: "Article links pollution to COPD/lung issues. Are we mapping illness data with pollution data?" },
+                { sender: 'stakeholder', text: "Sir, we collect respiratory illness data. We have not mapped it with pollution data yet." },
+                { sender: 'stakeholder', text: "This needs coordination with Pollution Control Board. We can start this. Good point." }, // Consecutive
+                { sender: 'dc', text: "Please do. Data is crucial. Now, technology. Article mentions AI for risk scores. Any advanced tech in our NCD program?" },
+                { sender: 'stakeholder', text: "Sir, no AI currently. We focus on NCD portal data entry. Some PHCs use telemedicine." },
+                { sender: 'stakeholder', text: "AI has huge potential. But it needs big investment. Infrastructure and training needed first. National initiatives might bring AI later." }, // Consecutive
+                { sender: 'dc', text: "What about simple tech? Smartphone apps? Health reminders via SMS?" },
+                { sender: 'stakeholder', text: "Sir, we use SMS for campaign awareness. Like for screening drives sometimes." },
+                { sender: 'stakeholder', text: "ASHAs use apps for some reports. Not widely for patient reminders yet. We can explore simple reminder systems. Link them to HWC registers." }, // Consecutive
+                { sender: 'dc', text: "Explore that. Let's discuss \"preventive mindset\" shift. For our healthcare providers." },
+                { sender: 'dc', text: "How do we train doctors, ANMs, CHOs, ASHAs? To counsel better on diet, exercise, quitting tobacco?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, NCD prevention and counselling is in their training. Under NPNCD program and HWC training." },
+                { sender: 'stakeholder', text: "We conduct regular refresher trainings. But workload is high. Focus often shifts to meeting targets." }, // Consecutive
+                { sender: 'stakeholder', text: "We need to monitor counselling quality continuously." }, // Consecutive
+                { sender: 'dc', text: "How can we measure counselling quality? Not just quantity? Maybe patient feedback surveys?" },
+                { sender: 'stakeholder', text: "Interesting idea, Sir. We could try patient exit interviews. At some HWCs/PHCs. Understand the counselling received. Need careful planning." },
+                { sender: 'dc', text: "Let's think about it. Final point. HWCs are \"stellar steps\". How many HWCs are fully functional? With trained CHOs? With NCD screening tools?" },
+                { sender: 'stakeholder', text: "Sir, about 85% designated HWCs are functional. They have a CHO." },
+                { sender: 'stakeholder', text: "Equipment is mostly good. Around 90% have working BP machines, glucometers. Strip stock-outs happen sometimes. Consistent service everywhere is the goal." }, // Consecutive
+                { sender: 'dc', text: "Okay. Schedule a detailed NCD review meeting. Next week. Need action points. Improve screening, tracking, tech use, counselling quality." },
+                { sender: 'stakeholder', text: "Yes Sir. I will prepare the data." }
+            ],
+            ps_health: [
+                { sender: 'dc', text: "Madam, regarding state NCD directive. I read the related article. Our district is taking steps. Wanted to share realities, seek guidance." },
+                { sender: 'stakeholder', text: "Good morning, Collector. Yes, NCDs are top priority. High economic and health burden. What are your key observations?" },
+                { sender: 'dc', text: "Madam, HWCs show promise for screening. But quality, follow-up, tracking are challenges. Gaps exist linking positives to higher care." },
+                { sender: 'stakeholder', text: "This is known statewide, Collector. We are strengthening the digital system. ABDM integration is key. (ABDM=Ayushman Bharat Digital Mission)." },
+                { sender: 'stakeholder', text: "Are your HWCs using the portals actively?" }, // Consecutive
+                { sender: 'dc', text: "Usage improving, Madam, but varies. Remote connectivity, CHO workload are issues. State's ABDM push helps." },
+                { sender: 'dc', text: "Is state support or training planned? To improve this HWC-hospital linkage?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes, new training modules are coming. Focus on digital tools, referral process. We explore performance incentives for follow-up rates. Still discussing this." },
+                { sender: 'dc', text: "Incentives would motivate staff. Madam, article highlights economic cost (5-10% GDP). This justifies more funds for prevention." },
+                { sender: 'dc', text: "Do state budgets show this shift? More funds for preventive vs curative care?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "State is increasing funds for primary care, HWCs. This includes prevention work. But overall health budget is tight." },
+                { sender: 'stakeholder', text: "We must use funds efficiently. Show good HWC outcomes. This justifies more funds specifically for NCD prevention. Beyond basic screening." }, // Consecutive
+                { sender: 'dc', text: "Understood. We must show impact. Article mentions AI for prediction. Is state planning AI pilot projects? For risk scoring? Diagnostic help?" },
+                { sender: 'stakeholder', text: "We have preliminary discussions. For pilots in few districts. Initial focus: AI for eye scans (diabetic retinopathy). Maybe AI help for ECG reading at HWCs." },
+                { sender: 'stakeholder', text: "It is early stage. Need strong data privacy rules first." }, // Consecutive
+                { sender: 'dc', text: "That's encouraging. Another point: health in public policies. Urban planning for parks? Food rules? Needs inter-departmental work." },
+                { sender: 'dc', text: "This is often hard at district level. Any state mechanism to help coordination?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "\"Health-in-all-policies\" is a principle. Chief Secretary chairs convergence meetings. You can convene meetings at district level." },
+                { sender: 'stakeholder', text: "Use NCD data in District Health Society. Make your case strongly. Involve Urban Dev, Education, Panchayati Raj." }, // Consecutive
+                { sender: 'dc', text: "Yes, Madam. I will convene a meeting. Article mentions corporate wellness too. Can state provide guidelines? Or incentives for industries?" },
+                { sender: 'stakeholder', text: "Labour Dept has advisories. Mostly voluntary now. We encourage districts to engage local industries." },
+                { sender: 'stakeholder', text: "Recognizing companies with good wellness programs? Could motivate them. We can consider a state recognition scheme." }, // Consecutive
+                { sender: 'dc', text: "That could work. Finally, Madam, the \"preventive mindset\". Any state-wide media campaigns planned? On NCD risks? Diet, exercise, tobacco? Check-ups?" },
+                { sender: 'stakeholder', text: "Yes, IEC is ongoing. (IEC = Information, Education, Communication). Campaigns planned for print, TV, social media. Focus on hypertension, diabetes, common cancers." },
+                { sender: 'stakeholder', text: "We depend on districts to amplify messages. Use local channels. Use ASHAs, Anganwadi workers." }, // Consecutive
+                { sender: 'dc', text: "We will ensure local amplification. Thank you, Madam. We focus on HWC performance. Data reviews, coordination, community engagement." },
+                { sender: 'stakeholder', text: "Excellent, Collector. Update State Health Mission on progress. Your district's performance matters." }
+            ],
+             ceo_zp: [
+                { sender: 'dc', text: "CEO, let's discuss NCD prevention. We need stronger links with Panchayat activities. Based on health data and the article." },
+                { sender: 'stakeholder', text: "Yes Sir, read the article. Panchayats can play a big role. How can we work together better?" },
+                { sender: 'dc', text: "First, Health & Wellness Centres (HWCs). Many are near Panchayats. Panchayats can support them." },
+                { sender: 'dc', text: "Do Gram Panchayats monitor HWC functions? Do they mobilize people for screenings?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, involvement varies greatly. Some Sarpanches are active. Others are less involved." },
+                { sender: 'stakeholder', text: "We can instruct Panchayat Secretaries. Make HWC function an agenda item. For Gram Sabha meetings." }, // Consecutive
+                { sender: 'dc', text: "Good idea. Let's do that. Also, ASHAs work in Panchayat areas. Health dept guides them." },
+                { sender: 'dc', text: "Can Panchayats motivate ASHAs? For NCD screening mobilization? NCD awareness? Beyond mother-child health?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Definitely Sir. GPs can facilitate ASHA meetings. Maybe recognize good NCD work. During Panchayat events. This boosts morale." },
+                { sender: 'dc', text: "Please explore recognition ideas. Article stresses lifestyle changes. Healthy diet, exercise." },
+                { sender: 'dc', text: "Can Panchayats promote these? Create walking tracks via MGNREGA? Promote kitchen gardens for vegetables?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, using MGNREGA for paths is possible. Check latest rules. Promoting kitchen gardens is part of NRLM. (NRLM = Livelihoods Mission)." },
+                { sender: 'stakeholder', text: "NRLM works with Self-Help Groups (SHGs). We can strengthen this link." }, // Consecutive
+                { sender: 'dc', text: "Excellent. Push for walking tracks/playgrounds. Where rules allow. Also, tobacco control near schools? Discouraging junk food at fairs?" },
+                { sender: 'stakeholder', text: "Sir, tobacco near schools is under COTPA act. (COTPA = Tobacco Products Act). Panchayats can help monitor this." },
+                { sender: 'stakeholder', text: "Discouraging junk food at melas is harder. Needs awareness. Promote healthy options alongside. We can try." }, // Consecutive
+                { sender: 'dc', text: "Awareness is key. Use Panchayat channels? Notice boards? Local announcements? SHG meetings? Spread simple NCD risk messages?" },
+                { sender: 'stakeholder', text: "Yes Sir. Provide simple IEC material. Posters, pamphlets from Health Dept. Give to all Panchayats for display. Use their networks, SHGs." },
+                { sender: 'dc', text: "Please coordinate with CMO. Get simplified IEC material. Article mentions pollution. Indoor pollution from chulhas? Local units like brick kilns?" },
+                { sender: 'dc', text: "Can Panchayats promote cleaner fuel (Ujjwala)? Monitor local polluting units?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, promoting Ujjwala is ongoing. Panchayats can raise indoor pollution awareness." },
+                { sender: 'stakeholder', text: "For polluting units, they can report violations. To Pollution Control Board or Revenue officials. Their monitoring is important." }, // Consecutive
+                { sender: 'dc', text: "Let's empower them to report. One more thing: \"preventive mindset\". Make 'health' prominent in GPDPs? (GPDP = Gram Panchayat Development Plans)." },
+                { sender: 'stakeholder', text: "Sir, health is already a GPDP theme. We can issue guidelines. Include specific NCD prevention activities. HWC support, sanitation, nutrition. Make it clearer." },
+                { sender: 'dc', text: "Perfect. Please issue those guidelines. Need push from grassroots level. Review progress in a month." },
+                { sender: 'stakeholder', text: "Will do, Sir. We will send instructions this week." }
+            ],
+             deo: [
+                { sender: 'dc', text: "DEO Sahab, need your input on NCDs. Focus on prevention starting from schools. Read the article? It flags risks starting young." },
+                { sender: 'stakeholder', text: "Yes Sir, read it. Alarming that NCDs affect young people. Schools have a definite role." },
+                { sender: 'dc', text: "Article mentions less activity, unhealthy diets. How do schools promote physical activity? Just one PT period? Or more?" },
+                { sender: 'stakeholder', text: "Sir, most schools have PT periods. Some have sports teams. Fit India Movement encourages activities. Yoga too." },
+                { sender: 'stakeholder', text: "But consistency varies. Playground infrastructure differs." }, // Consecutive
+                { sender: 'dc', text: "Ensure all schools promote 30-60 mins activity. Issue instructions? More active assemblies? Short exercise breaks? Yoga?" },
+                { sender: 'stakeholder', text: "Sir, short breaks possible. Active assembly doable. Promoting yoga is encouraged. We can repeat the message." },
+                { sender: 'stakeholder', text: "Trained PT/yoga teachers are few. Especially in primary schools. This is a constraint." }, // Consecutive
+                { sender: 'dc', text: "Look into short training for teachers. Or use local community yoga experts. Now, diet. Article flags high sugar/salt/fat." },
+                { sender: 'dc', text: "What about school canteens? Midday meals (MDM)? Do we check nutrition quality? Avoid junk food?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, MDM rules focus on calories, protein. Rice/roti, dal, vegetables usually. We try to ensure quality." },
+                { sender: 'stakeholder', text: "School canteens mostly in private schools. Advisories exist against HFSS foods. (HFSS = High Fat, Salt, Sugar). Enforcement needs focus." }, // Consecutive
+                { sender: 'dc', text: "Okay, focus on MDM quality, variety. More vegetables maybe. Enforce HFSS rules strictly in canteens." },
+                { sender: 'dc', text: "What about health education? Does curriculum cover NCDs? Healthy eating? Tobacco risks? Exercise importance simply?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, Health & Physical Education subject exists. It covers nutrition, hygiene, tobacco effects." },
+                { sender: 'stakeholder', text: "New NEP 2020 also stresses health. We need teachers to teach effectively. Not just theory. Make it engaging." }, // Consecutive
+                { sender: 'dc', text: "Exactly. How do we measure effectiveness? Do schools conduct basic health checks? Screen for obesity? Refer concerns?" },
+                { sender: 'stakeholder', text: "Sir, RBSK teams visit schools. (RBSK = Child Health Program). They screen health. Check BMI for nutrition status. (BMI = Body Mass Index)." },
+                { sender: 'stakeholder', text: "We must monitor RBSK coverage closely. Also check follow-up of referrals. Needs coordination with CMO office." }, // Consecutive
+                { sender: 'dc', text: "Let's get RBSK data. Specifically on obesity checks, follow-up. Need Health-Education synergy here." },
+                { sender: 'dc', text: "What about promoting \"health-first\" mindset? Can schools involve parents? Healthy tiffins awareness? Limit screen time?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, Parent-Teacher Meetings (PTMs) are useful. Ask schools to discuss healthy habits. Make it an agenda point." },
+                { sender: 'stakeholder', text: "Involve School Management Committees (SMCs). Run poster campaigns for students. Healthy living themes." }, // Consecutive
+                { sender: 'dc', text: "Good ideas. Develop simple materials for PTMs, SMCs. Practical tips for parents. Also, ensure strict tobacco-free school zones (COTPA)." },
+                { sender: 'stakeholder', text: "Yes Sir. Will issue instructions. Active assemblies, HFSS monitoring. Use PTMs/SMCs for health awareness. Reinforce COTPA. Coordinate with CMO." },
+                { sender: 'dc', text: "Thank you, DEO. Early habits are crucial. Let's make schools healthier places." },
+                { sender: 'stakeholder', text: "Absolutely Sir. We will work on it." }
+            ],
+            hr_head: [
+                { sender: 'dc', text: "Mr. Verma, discussing industrial growth earlier. Also want to discuss employee health. NCD prevention is a focus now. Article shared." },
+                { sender: 'stakeholder', text: "Good afternoon, Sir. Employee wellness is important. Productivity is linked. We do annual health checks for staff over 35." },
+                { sender: 'dc', text: "Good start. Article says NCDs hit younger staff too. Diabetes, hypertension. Are check-ups comprehensive? Include lifestyle risk counselling?" },
+                { sender: 'stakeholder', text: "Sir, check-up covers basics. BP, sugar, BMI, blood tests. We get a report. Counselling is brief. Camp doctors do it. Could be better." },
+                { sender: 'dc', text: "Consider enhancing counselling. Article emphasizes prevention. What proactive steps beyond checks? Promote exercise? Healthy canteen food? Stress management? Tobacco support?" },
+                { sender: 'stakeholder', text: "Sir, we have small gym, some sports. Canteen has variety. But tastes prefer fried food, sugary drinks." },
+                { sender: 'stakeholder', text: "We haven't run specific diet campaigns. Or tobacco cessation recently. Stress is an issue, especially on shop floor." }, // Consecutive
+                { sender: 'dc', text: "Article links NCDs to lost productivity. 5-10% GDP impact nationally. Prevention gives return on investment (ROI). Reduced absence, better efficiency. Think structured programs." },
+                { sender: 'stakeholder', text: "Sir, I understand the link. But programs cost money. Hiring counsellors, subsidizing food. Time for fitness. Management needs cost-benefit proof." },
+                { sender: 'dc', text: "Frame it as investment. Start small? Wellness corners with health info? Partner with hospitals/NGOs for counselling? Promote stair use? Better rates for healthy food?" },
+                { sender: 'stakeholder', text: "Feasible ideas, Sir. Wellness corner, counselling partnership seem practical. We can explore posters, messages too." },
+                { sender: 'stakeholder', text: "What about tobacco use? It is common among workers." }, // Consecutive
+                { sender: 'dc', text: "Major NCD risk factor. Enforce stricter smoke-free rules. Offer cessation support programs. Counselling, maybe nicotine patches. Link with District Tobacco Control Cell." },
+                { sender: 'stakeholder', text: "Okay Sir. We can explore cessation support. With our medical advisors." },
+                { sender: 'dc', text: "Article mentions tech. Wearables, apps. Any potential for your workforce? Maybe fitness challenges using trackers?" },
+                { sender: 'stakeholder', text: "Sir, maybe for office staff. Wearables difficult for shop floor workers. Work environment issues." },
+                { sender: 'stakeholder', text: "But simple apps for health info? Challenges? Could work for smartphone users. We can explore." }, // Consecutive
+                { sender: 'dc', text: "Explore options relevant to your context. Goal is \"preventive mindset\". Can your company be a model? For other industries here?" },
+                { sender: 'dc', text: "We could arrange a meeting. Industry HR heads discuss best practices." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, that would help. Sharing experiences helps find solutions. We will participate. We will improve our efforts." },
+                { sender: 'stakeholder', text: "Start with better check-up counselling. Set up wellness info corners." }, // Consecutive
+                { sender: 'dc', text: "Good. Inform my office about your steps. Healthy workforce benefits company and district." },
+                { sender: 'stakeholder', text: "Will do, Sir. Thank you for your guidance." }
+            ],
+            ngo_head: [
+                { sender: 'dc', text: "Ms. Iyer, your NGO does good health work. Let's align NCD prevention efforts. Based on recent focus and article. What do you see?" },
+                { sender: 'stakeholder', text: "Thank you, Sir. Yes, we see many NCDs. Especially in poor areas. Diabetes, hypertension common. Often undiagnosed early. Awareness is low." },
+                { sender: 'dc', text: "Article calls NCDs \"silent epidemic\". Your experience confirms this? People delay seeking help?" },
+                { sender: 'stakeholder', text: "Absolutely Sir. People link illness to pain, fever. High BP often has no symptoms. Daily wages priority over check-ups. Cost, distance also barriers." },
+                { sender: 'dc', text: "HWCs aim to improve access. Do people use them for NCD screening? In your work areas? What is the feedback?" },
+                { sender: 'stakeholder', text: "Sir, use is slowly increasing. Where HWCs are active, CHOs engaging. Trust building takes time. People doubt free checks, lifelong medicine." },
+                { sender: 'stakeholder', text: "Consistent staff, supplies at HWCs build trust. This is very crucial." }, // Consecutive
+                { sender: 'dc', text: "Understood. Article emphasizes lifestyle. Diet, exercise, tobacco. How effective is BCC on ground? (BCC = Behaviour Change Communication). What works?" },
+                { sender: 'stakeholder', text: "Sir, BCC must be relevant, practical. Simple messages work best. Not complex medical words." },
+                { sender: 'stakeholder', text: "Demos help. Like healthy cooking with local food. Peer support groups are good. Use local folk media. Involve local leaders. One-off lectures don't work well." }, // Consecutive
+                { sender: 'dc', text: "Peer support groups sound good. Are you running any?" },
+                { sender: 'stakeholder', text: "Yes Sir, few pilot groups for diabetics. In two blocks. They share tips, experiences. Motivate each other for check-ups. It helps adherence." },
+                { sender: 'dc', text: "Explore scaling this. Maybe with SHGs. What about tobacco, alcohol? Sensitive topics." },
+                { sender: 'stakeholder', text: "Very sensitive, Sir. Needs sustained counselling. Linked to social norms, stress. We involve families. Highlight economic cost. Health risks too." },
+                { sender: 'stakeholder', text: "Linking users to de-addiction services is vital. But awareness, access to these services often low." }, // Consecutive
+                { sender: 'dc', text: "Point taken. Strengthen de-addiction service visibility. Article mentions tech like apps. Relevant for your communities?" },
+                { sender: 'stakeholder', text: "Sir, smartphone use is rising. Even in poor areas. Simple apps in local language help. SMS reminders useful. But digital literacy varies." },
+                { sender: 'stakeholder', text: "Tech must support face-to-face interaction. By ASHAs, NGO staff. Not replace it." }, // Consecutive
+                { sender: 'dc', text: "Agreed. How can your NGO collaborate better? With District Health Admin on NCDs?" },
+                { sender: 'stakeholder', text: "Sir, we can help with:"
+                     + "<ul><li>Community mobilization, awareness. Reaching vulnerable groups.</li>"
+                     + "<li>Training ASHAs/Anganwadis on BCC techniques.</li>"
+                     + "<li>Running screening camps in remote areas. Support HWC efforts.</li>"
+                     + "<li>Facilitating patient support groups.</li>"
+                     + "<li>Giving ground-level feedback on challenges.</li></ul>"
+                 }, // Using UL for list
+                { sender: 'dc', text: "Very helpful. Let's meet with CMO, your team. Formalize collaboration. Start joint camps? Scale up support groups?" },
+                { sender: 'stakeholder', text: "We are happy to collaborate formally, Sir. Thank you for reaching out." },
+                { sender: 'dc', text: "Goal is a healthier district. Community partners like you are essential. Thank you." },
+                { sender: 'stakeholder', text: "Our pleasure, Sir." }
+            ]
+        };
+
+
+        // --- Global Variables ---
+        let currentStakeholderKey = null;
+        let currentMessageIndex = 0;
+        let isTypingOrLoading = false; // Flag to prevent clicks during animations/stakeholder turns
+        let typingIntervalId = null; // To store the interval ID for typing simulation
+
+        // --- DOM References ---
+        const stakeholderSelectionDiv = document.getElementById('stakeholder-selection');
+        const chatContainerDiv = document.getElementById('chat-container');
+        const chatHeaderName = document.getElementById('stakeholder-name');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingDots = document.getElementById('loading-dots');
+
+        // --- Constants ---
+        const TYPING_SPEED_MS = 35; // Speed of DC typing animation
+        const STAKEHOLDER_MESSAGE_DELAY_MS = 2000; // Delay between consecutive stakeholder messages
+        const STAKEHOLDER_REPLY_DELAY_MS = 500; // Delay before stakeholder starts replying
+
+        // --- Functions ---
+
+        /** Scrolls the chat messages div to the bottom smoothly */
+        function scrollToBottom() {
+            // Adding a slight delay to ensure the element is rendered before scrolling
+            setTimeout(() => {
+                chatMessagesDiv.scrollTo({ top: chatMessagesDiv.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        /** Displays a message in the chat window */
+        function displayMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'dc' ? 'user-message' : 'stakeholder-message');
+            // Use innerHTML to correctly render list tags (ul, li)
+            messageDiv.innerHTML = text;
+            chatMessagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        /** Simulates the DC typing a message into the input bar */
+        function typeMessageInInput(text, callback) {
+            let charIndex = 0;
+            messageInput.value = ''; // Clear input
+            messageInput.placeholder = 'Typing...'; // Show typing indicator
+            isTypingOrLoading = true; // Set busy flag
+            sendButton.disabled = true; // Disable send button
+
+            if (typingIntervalId) clearInterval(typingIntervalId); // Clear previous interval if any
+
+            typingIntervalId = setInterval(() => {
+                if (charIndex < text.length) {
+                    messageInput.value += text.charAt(charIndex);
+                    charIndex++;
+                } else {
+                    clearInterval(typingIntervalId);
+                    typingIntervalId = null;
+                    // Short pause after typing before executing callback
+                    setTimeout(() => {
+                        callback(text); // Execute the callback (usually onDcTypingComplete)
+                    }, 150);
+                }
+            }, TYPING_SPEED_MS);
+        }
+
+        /** Handles the process after the DC's message has been typed and sent */
+        function onDcTypingComplete(typedText) {
+            displayMessage('dc', typedText); // Show the DC's message in chat history
+            messageInput.value = ''; // Clear the input bar
+            messageInput.placeholder = "Waiting for response..."; // Update placeholder
+
+            // Check the next message
+            const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+
+            if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                // If stakeholder replies next, show loading dots and start their sequence
+                loadingDots.classList.remove('hidden');
+                scrollToBottom(); // Scroll after showing dots
+                setTimeout(processStakeholderSequence, STAKEHOLDER_REPLY_DELAY_MS); // Short delay before stakeholder starts "replying"
+            } else if (nextMessageData && nextMessageData.sender === 'dc') {
+                // If DC speaks again next, immediately prepare for the next DC turn
+                prepareForNextDcTurn();
+            } else {
+                // End of conversation after DC's message
+                prepareForNextDcTurn(); // This will handle the end state
+            }
+        }
+
+        /** Processes a sequence of one or more stakeholder messages */
+        function processStakeholderSequence() {
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                prepareForNextDcTurn(); // End of conversation or error state
+                return;
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+
+            if (messageData.sender === 'stakeholder') {
+                loadingDots.classList.add('hidden'); // Hide loading dots before showing message
+                isTypingOrLoading = true; // Stakeholder is "active"
+                sendButton.disabled = true;
+
+                // Display the stakeholder message
+                displayMessage('stakeholder', messageData.text);
+                currentMessageIndex++; // Move to the next message index
+
+                // Look ahead: Check if the *next* message is ALSO from the stakeholder
+                const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+                if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                    // If yes, schedule the next stakeholder message after a delay
+                    setTimeout(processStakeholderSequence, STAKEHOLDER_MESSAGE_DELAY_MS);
+                } else {
+                    // If the next message is from DC or the end, prepare for DC's turn
+                    prepareForNextDcTurn();
+                }
+            } else {
+                // If the current message is not from the stakeholder (e.g., DC or end),
+                // stop the sequence and prepare for DC's turn.
+                prepareForNextDcTurn();
+            }
+        }
+
+
+        /** Checks the next message and sets the UI state (enables send button or ends chat) */
+        function prepareForNextDcTurn() {
+            isTypingOrLoading = false; // No longer typing or waiting for stakeholder sequence
+            loadingDots.classList.add('hidden'); // Ensure loading dots are hidden
+
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                // Conversation ended
+                messageInput.placeholder = "Conversation ended.";
+                sendButton.disabled = true;
+            } else {
+                // Check whose turn is next
+                const nextMessageData = conversations[currentStakeholderKey][currentMessageIndex];
+                if (nextMessageData.sender === 'dc') {
+                    // It's DC's turn
+                    messageInput.placeholder = "Click Send for your next message...";
+                    sendButton.disabled = false; // Enable send button
+                } else {
+                    // Should be stakeholder's turn - disable send and wait
+                     messageInput.placeholder = "Waiting for response...";
+                     sendButton.disabled = true;
+                     // The stakeholder sequence should handle showing their message
+                     // If processStakeholderSequence didn't trigger, maybe call it here defensively?
+                     // For now, relying on the flow from onDcTypingComplete -> processStakeholderSequence
+                     console.warn("PrepareForNextDcTurn called when stakeholder is next. Flow issue?");
+                }
+            }
+        }
+
+        /** Handles the click event on the Send button */
+        function handleSendClick() {
+            // Prevent action if already busy or not DC's turn
+            if (isTypingOrLoading || !currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length || conversations[currentStakeholderKey][currentMessageIndex].sender !== 'dc') {
+                return; // Do nothing if conditions not met
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+            currentMessageIndex++; // IMPORTANT: Increment index *before* typing starts
+
+            // Start the typing simulation, which will call onDcTypingComplete when done
+            typeMessageInInput(messageData.text, onDcTypingComplete);
+        }
+
+        /** Starts a specific conversation */
+        function startConversation(stakeholderKey, stakeholderName) {
+            const conversationData = conversations[stakeholderKey];
+            if (!conversationData || conversationData.length === 0) {
+                console.error("Conversation data not found or empty for key:", stakeholderKey);
+                return;
+            }
+            currentStakeholderKey = stakeholderKey;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+
+            // Update UI elements
+            stakeholderSelectionDiv.classList.add('hidden');
+            chatContainerDiv.classList.remove('hidden');
+            chatHeaderName.textContent = stakeholderName;
+            chatMessagesDiv.innerHTML = ''; // Clear previous messages
+            messageInput.value = '';
+            messageInput.readOnly = true;
+            loadingDots.classList.add('hidden');
+
+
+            // Determine the first turn
+            const firstMessage = conversationData[0];
+            if (firstMessage.sender === 'dc') {
+                prepareForNextDcTurn(); // Prepare for DC to click Send
+            } else if (firstMessage.sender === 'stakeholder') {
+                // If stakeholder starts, initiate their sequence immediately
+                isTypingOrLoading = true; // Set busy flag
+                sendButton.disabled = true;
+                messageInput.placeholder = "Waiting for response...";
+                setTimeout(processStakeholderSequence, STAKEHOLDER_REPLY_DELAY_MS); // Start after a brief pause
+            }
+        }
+
+        /** Navigates back to the stakeholder selection screen */
+        function goBackToSelection() {
+            chatContainerDiv.classList.add('hidden');
+            stakeholderSelectionDiv.classList.remove('hidden');
+            currentStakeholderKey = null;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+            if (typingIntervalId) { // Clear any ongoing typing animation
+                clearInterval(typingIntervalId);
+                typingIntervalId = null;
+            }
+            // Reset input state
+            messageInput.placeholder = "Click Send for your next message...";
+            sendButton.disabled = true;
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendClick);
+
+        // --- Initial Setup ---
+        // Chat container hidden by default via CSS rules
+    </script>
+
+</body>
+</html>
