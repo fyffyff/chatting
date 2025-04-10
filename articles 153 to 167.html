@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Chat - State Executive (Art 152-167)</title>
+    <style>
+        /* Basic Reset & Body Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #DADADA; /* Lighter grey background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Stakeholder Selection Screen */
+        #stakeholder-selection {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px; /* Limit width */
+        }
+
+        #stakeholder-selection h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2em; /* Adjust size */
+        }
+
+        #stakeholder-selection button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #stakeholder-selection button:hover {
+            background-color: #128c7e; /* Lighter WhatsApp Green */
+        }
+
+        /* Chat Container */
+        #chat-container {
+            width: 90%;
+            max-width: 400px; /* Narrower for mobile feel */
+            height: 85vh; /* Fixed height */
+            max-height: 700px; /* Max height */
+            background-color: #e5ddd5; /* WhatsApp chat background color */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* Chat Header */
+        #chat-header {
+            background-color: #075e54;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #054e46;
+            flex-shrink: 0;
+        }
+
+        #back-button {
+            font-size: 1.5em;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        #stakeholder-name {
+            flex-grow: 1;
+            text-align: left;
+            font-size: 1.1em; /* Adjust size */
+        }
+
+        #chat-header .status {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #dcf8c6; /* Light green for status */
+            margin-left: 10px;
+        }
+
+        /* Message Area */
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Optional WhatsApp background pattern */
+            background-size: contain; /* Adjust pattern size */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Message Bubbles */
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            clear: both;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            position: relative;
+            font-size: 0.95em; /* Slightly smaller font */
+        }
+
+        .user-message {
+            background-color: #dcf8c6; /* WhatsApp green bubble */
+            margin-left: auto;
+            float: right;
+            border-top-right-radius: 0;
+        }
+
+        .stakeholder-message {
+            background-color: #ffffff; /* White bubble */
+            margin-right: auto;
+            float: left;
+            border-top-left-radius: 0;
+        }
+
+        /* Loading Dots Styling */
+        #loading-dots {
+            background-color: #ffffff; /* White bubble */
+            border-top-left-radius: 0;
+            padding: 8px 12px; /* Match message padding */
+            margin-bottom: 10px;
+            margin-right: auto;
+            float: left;
+            clear: both;
+            width: fit-content;
+            min-height: 20px; /* Ensure height */
+            align-items: center; /* Vertically align dots */
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            border-radius: 8px; /* Standard rounding */
+            border-top-left-radius: 0; /* Notch */
+        }
+
+        #loading-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #aaa;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 0.8s infinite alternate;
+        }
+
+        #loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        #loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Input Area Styling */
+        #chat-input {
+            display: flex;
+            padding: 8px 10px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            margin-right: 8px;
+            font-size: 15px;
+            background-color: #fff;
+            resize: none;
+            line-height: 1.4;
+            color: #333; /* Make typed text visible */
+        }
+
+        #message-input[readonly] {
+             background-color: #fff; /* Keep white for typing effect */
+             cursor: default;
+             color: #333;
+        }
+        #message-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        #send-button {
+            padding: 0;
+            width: 44px;
+            height: 44px;
+            background-color: #128c7e; /* WhatsApp green */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        #send-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #send-button:hover:not(:disabled) {
+             background-color: #075e54;
+        }
+        #send-button:disabled {
+            background-color: #99cec9; /* Lighter green when disabled */
+            cursor: not-allowed;
+        }
+
+        /* Utility class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Stakeholder Selection Area -->
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With:</h2>
+        <button onclick="startConversation('cle', 'Constitutional Law Expert (CLE)')">Constitutional Law Expert (CLE)</button>
+        <button onclick="startConversation('cs', 'Chief Secretary (CS)')">Chief Secretary (CS)</button>
+        <button onclick="startConversation('adm', 'Additional District Magistrate (ADM)')">Additional District Magistrate (ADM)</button>
+        <button onclick="startConversation('dio', 'District Information Officer (DIO)')">District Information Officer (DIO)</button>
+    </div>
+
+    <!-- Chat Area -->
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Online</span>
+        </div>
+        <div id="chat-messages">
+            <!-- Chat messages appear here -->
+        </div>
+        <!-- Loading dots element -->
+        <div id="loading-dots" class="hidden stakeholder-message"> <!-- Added class for bubble style -->
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="chat-input">
+            <!-- Input field shows simulated typing -->
+            <input type="text" id="message-input" placeholder="Click Send for your next message..." readonly>
+            <button id="send-button" disabled>
+                <!-- Simple Send Icon SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Conversation Data ---
+        const conversations = {
+            cle: [
+                { sender: 'dc', text: "Good morning, Professor. Can you help me with Articles 152-167?" },
+                { sender: 'stakeholder', text: "Good morning, DC Sahib. Yes, certainly. How can I help you understand?" },
+                { sender: 'dc', text: "Let's start with Article 152. It defines the term \"State\"." }, // Escaped quotes
+                { sender: 'stakeholder', text: "Yes. It originally excluded Jammu and Kashmir. This changed in 2019." },
+                { sender: 'dc', text: "So, now \"State\" in Part VI applies to all states generally?" }, // Escaped quotes
+                { sender: 'stakeholder', text: "Correct. The old exclusion is mostly history now for this Part." },
+                { sender: 'dc', text: "Understood. Article 153 says each state needs a Governor?" },
+                { sender: 'stakeholder', text: "Yes. The Constitution requires a Governor for every single state." },
+                { sender: 'dc', text: "Can one person govern two or more states? Article 153 proviso." },
+                { sender: 'stakeholder', text: "Yes, the President can appoint one person as Governor for multiple states." },
+                { sender: 'dc', text: "Who appoints the Governor? Article 155." },
+                { sender: 'stakeholder', text: "The President appoints the Governor. The President uses a formal order." },
+                { sender: 'dc', text: "What about the Governor's term? Article 156." },
+                { sender: 'stakeholder', text: "The Governor serves as long as the President wishes. This is 'President's pleasure'." },
+                { sender: 'dc', text: "So the President can remove the Governor anytime?" },
+                { sender: 'stakeholder', text: "Yes. The President has the power to remove the Governor." },
+                { sender: 'dc', text: "But Article 156 also mentions a five-year term?" },
+                { sender: 'stakeholder', text: "The usual term is five years. But it depends on the President's wish." },
+                { sender: 'dc', text: "So, the five-year term is not fully guaranteed?" },
+                { sender: 'stakeholder', text: "Correct. The President's pleasure is the main factor." },
+                { sender: 'dc', text: "Can the Governor resign before five years? Article 156(2)." },
+                { sender: 'stakeholder', text: "Yes, the Governor can resign. They write to the President." },
+                { sender: 'dc', text: "What if the five-year term ends? Does the Governor leave office?" },
+                { sender: 'stakeholder', text: "No, the Governor stays until the next Governor arrives. (Art 156 proviso)." },
+                { sender: 'dc', text: "This prevents any gap in the Governor's office?" },
+                { sender: 'stakeholder', text: "Exactly. It ensures someone always holds the office." },
+                { sender: 'dc', text: "What qualifications does a Governor need? Article 157." },
+                { sender: 'stakeholder', text: "They must be an Indian citizen. They must be 35 years old." },
+                { sender: 'dc', text: "Are there any other usual practices for selection?" },
+                { sender: 'stakeholder', text: "Often, they choose respected people. Sometimes from outside the state for fairness." },
+                { sender: 'dc', text: "Article 158 talks about conditions for the Governor's office." },
+                { sender: 'stakeholder', text: "Yes. The Governor cannot be a Member of Parliament (MP)." },
+                { sender: 'stakeholder', text: "The Governor cannot be a Member of a State Legislature (MLA/MLC)." }, // Consecutive stakeholder
+                { sender: 'dc', text: "What if an MP or MLA becomes Governor?" },
+                { sender: 'stakeholder', text: "They must leave their MP or MLA seat immediately. (Art 158(1))." },
+                { sender: 'dc', text: "Article 158(2) says 'no other office of profit'. What is that?" },
+                { sender: 'stakeholder', text: "It means no other paid job under the government (Union or State)." },
+                { sender: 'dc', text: "Why is this rule there?" },
+                { sender: 'stakeholder', text: "This rule prevents clashes of interest. It ensures focus on the Governor role." },
+                { sender: 'dc', text: "Does the Governor get an official house? Article 158(3)." },
+                { sender: 'stakeholder', text: "Yes. They get official houses without paying rent." },
+                { sender: 'dc', text: "Who decides the Governor's salary and allowances?" },
+                { sender: 'stakeholder', text: "Parliament decides the salary and allowances by making a law." },
+                { sender: 'dc', text: "What if Parliament has not made a law yet?" },
+                { sender: 'stakeholder', text: "Then the Constitution's Second Schedule specifies the salary." },
+                { sender: 'dc', text: "Can the Governor's salary be reduced during their term? Article 158(4)." },
+                { sender: 'stakeholder', text: "No. Their salary and allowances cannot decrease while in office." },
+                { sender: 'dc', text: "What if one Governor manages two states? Article 158(3A)." },
+                { sender: 'stakeholder', text: "The President decides how the states will share the salary costs." },
+                { sender: 'dc', text: "Now, Article 154. State's executive power is with the Governor?" },
+                { sender: 'stakeholder', text: "Yes. All executive power of the State Government belongs to the Governor." },
+                { sender: 'dc', text: "How does the Governor use this power? Directly?" },
+                { sender: 'stakeholder', text: "The Governor can act directly. Or through officers under them. (Art 154(1))." },
+                { sender: 'dc', text: "Who are these 'officers subordinate'?" },
+                { sender: 'stakeholder', text: "This includes the Council of Ministers and civil servants like you." },
+                { sender: 'dc', text: "Does this take away powers from other bodies? Art 154(2)(a)." },
+                { sender: 'stakeholder', text: "No. It doesn't transfer powers given to others by existing laws." },
+                { sender: 'dc', text: "Can Parliament or State Legislature give functions to others? Art 154(2)(b)." },
+                { sender: 'stakeholder', text: "Yes. Laws can give functions to authorities under the Governor." },
+                { sender: 'dc', text: "So, the Governor is the formal head. But others exercise power?" },
+                { sender: 'stakeholder', text: "Correct. Usually, the elected government exercises the power." },
+                { sender: 'dc', text: "This relates to Article 163? Council of Ministers advising Governor?" },
+                { sender: 'stakeholder', text: "Exactly. The Council of Ministers (CoM), led by the CM, advises the Governor." },
+                { sender: 'dc', text: "Must the Governor always follow the Ministers' advice? Art 163(1)." },
+                { sender: 'stakeholder', text: "Mostly, yes. That is how state parliamentary democracy works." },
+                { sender: 'dc', text: "But Article 163(1) mentions an exception? Governor's discretion?" },
+                { sender: 'stakeholder', text: "Yes. The Governor can act in their discretion in some matters." },
+                { sender: 'dc', text: "What are these discretionary powers? Where are they listed?" },
+                { sender: 'stakeholder', text: "The Constitution does not give a full list. Some are stated, some implied." },
+                { sender: 'stakeholder', text: "Example: Sending a state bill to the President (Art 200)." }, // Consecutive
+                { sender: 'stakeholder', text: "Example: Choosing a CM if no party has a clear majority after elections." }, // Consecutive
+                { sender: 'stakeholder', text: "Example: Dismissing ministers if they lose the Assembly's trust." }, // Consecutive
+                { sender: 'stakeholder', text: "Example: Recommending President's Rule in the state (Art 356)." }, // Consecutive
+                { sender: 'dc', text: "What if there is doubt about using discretion? Art 163(2)." },
+                { sender: 'stakeholder', text: "The Governor's own decision on using discretion is final." },
+                { sender: 'dc', text: "Can someone challenge the Governor's discretionary decision in court?" },
+                { sender: 'stakeholder', text: "No. Courts cannot question the Governor's decision on this ground." },
+                { sender: 'dc', text: "Can courts ask what advice Ministers gave the Governor? Art 163(3)." },
+                { sender: 'stakeholder', text: "No. Courts cannot inquire into the advice given by Ministers." },
+                { sender: 'dc', text: "This balance between advice and discretion seems very important." },
+                { sender: 'stakeholder', text: "It is. The Governor acts as a link and protects the Constitution." },
+                { sender: 'dc', text: "Let's discuss Article 161. The Governor's pardoning power." },
+                { sender: 'stakeholder', text: "The Governor can pardon or reduce sentences for state law offences." },
+                { sender: 'dc', text: "How does this differ from the President's power?" },
+                { sender: 'stakeholder', text: "The Governor's power applies only to laws made by the state legislature." },
+                { sender: 'dc', text: "Can the Governor pardon a death sentence?" },
+                { sender: 'stakeholder', text: "No. Only the President can pardon a death sentence." },
+                { sender: 'dc', text: "But can the Governor do anything about a death sentence?" },
+                { sender: 'stakeholder', text: "Yes. The Governor can delay, reduce, or change a death sentence." },
+                { sender: 'dc', text: "Can the Governor pardon military court punishments?" },
+                { sender: 'stakeholder', text: "No. Governors cannot pardon punishments given by military courts." },
+                { sender: 'dc', text: "Can you quickly explain pardon, commute, remit, respite, reprieve?" },
+                { sender: 'stakeholder', text: "Pardon: Fully forgives the crime and punishment." },
+                { sender: 'stakeholder', text: "Commute: Changes a heavy punishment to a lighter one." }, // Consecutive
+                { sender: 'stakeholder', text: "Remission: Reduces the time of punishment. The type stays same." }, // Consecutive
+                { sender: 'stakeholder', text: "Respite: Gives less punishment due to special facts (like pregnancy)." }, // Consecutive
+                { sender: 'stakeholder', text: "Reprieve: Temporarily stops the punishment (like execution)." }, // Consecutive
+                { sender: 'dc', text: "That's very clear. Now, Article 164 about Ministers." },
+                { sender: 'stakeholder', text: "The Governor appoints the Chief Minister (CM). (Art 164(1))." },
+                { sender: 'stakeholder', text: "The Governor appoints other Ministers based on the CM's advice." }, // Consecutive
+                { sender: 'dc', text: "How long do Ministers stay in office?" },
+                { sender: 'stakeholder', text: "Ministers hold office as long as the Governor is pleased. (Art 164(1))." },
+                { sender: 'dc', text: "Does 'Governor's pleasure' mean the Governor's personal wish here?" },
+                { sender: 'stakeholder', text: "Usually not. For other Ministers, it means the CM's advice matters." },
+                { sender: 'stakeholder', text: "For the CM, it usually means having majority support in the Assembly." }, // Consecutive
+                { sender: 'dc', text: "Can the Governor dismiss a CM?" },
+                { sender: 'stakeholder', text: "Yes, if the CM loses the Assembly's confidence (majority support)." },
+                { sender: 'dc', text: "Article 164(2) mentions 'collectively responsible'. What does this mean?" },
+                { sender: 'stakeholder', text: "The whole Council of Ministers works as one team." },
+                { sender: 'stakeholder', text: "They are responsible together to the State Legislative Assembly." }, // Consecutive
+                { sender: 'stakeholder', text: "If the Assembly votes 'no confidence', the entire ministry must resign." }, // Consecutive
+                { sender: 'stakeholder', text: "Also, a cabinet decision binds every minister in the government." }, // Consecutive
+                { sender: 'dc', text: "Article 164(1A) limits the number of Ministers?" },
+                { sender: 'stakeholder', text: "Yes. A 2003 amendment added this rule." },
+                { sender: 'stakeholder', text: "Total Ministers (CM included) cannot be more than 15% of Assembly members." }, // Consecutive
+                { sender: 'dc', text: "Is there a minimum number of Ministers required?" },
+                { sender: 'stakeholder', text: "Yes. A state must have at least 12 Ministers (including the CM)." },
+                { sender: 'dc', text: "Why have a minimum number?" },
+                { sender: 'stakeholder', text: "It helps ensure enough representation, especially in smaller states." },
+                { sender: 'dc', text: "What is Article 164(1B)? About disqualified members?" },
+                { sender: 'stakeholder', text: "If a member is disqualified for switching parties (defection - Tenth Schedule)." },
+                { sender: 'stakeholder', text: "Then that person cannot become a Minister during the disqualification period." }, // Consecutive
+                { sender: 'dc', text: "Until they get re-elected?" },
+                { sender: 'stakeholder', text: "Yes, or until their disqualification period naturally ends." },
+                { sender: 'dc', text: "Can someone become a Minister without being an MLA or MLC? Art 164(4)." },
+                { sender: 'stakeholder', text: "Yes, but only for six months continuously." },
+                { sender: 'stakeholder', text: "They must become a member of the State Legislature within six months." }, // Consecutive
+                { sender: 'stakeholder', text: "If not, they stop being a Minister after six months." }, // Consecutive
+                { sender: 'dc', text: "Who decides Minister salaries? Article 164(5)." },
+                { sender: 'stakeholder', text: "The State Legislature decides salaries and allowances by law." },
+                { sender: 'stakeholder', text: "Until then, the Second Schedule of the Constitution applies." }, // Consecutive
+                { sender: 'dc', text: "Article 164(1) proviso mentions a Tribal Welfare Minister?" },
+                { sender: 'stakeholder', text: "Yes, in Bihar, Madhya Pradesh, Odisha (*check current applicability*), a Minister must handle tribal welfare." },
+                { sender: 'stakeholder', text: "This minister can also manage SC/Backward Classes welfare." }, // Consecutive
+                { sender: 'dc', text: "Professor, this detailed breakdown is excellent. Thank you very much." },
+                { sender: 'stakeholder', text: "You are welcome, DC Sahib. Glad I could clarify these important articles." },
+                { sender: 'dc', text: "Your explanations were very simple and clear. Thanks again." }
+            ],
+            cs: [
+                { sender: 'dc', text: "Good morning, Madam CS. Need clarity on some procedures." },
+                { sender: 'stakeholder', text: "Morning, DC. Please ask." },
+                { sender: 'dc', text: "Article 166(1): State expresses all executive action in Governor's name." },
+                { sender: 'stakeholder', text: "Yes. This is the standard format for all government orders and notifications." },
+                { sender: 'dc', text: "It shows the Governor is the formal executive head." },
+                { sender: 'stakeholder', text: "Correct. The order reads \"By order and in the name of the Governor\"." }, // Escaped quotes
+                { sender: 'dc', text: "How does authentication work? Article 166(2). Who signs these?" },
+                { sender: 'stakeholder', text: "The Governor makes rules for this. Usually authorized Secretaries sign." },
+                { sender: 'dc', text: "So, not the Governor personally signing every order?" },
+                { sender: 'stakeholder', text: "Correct. Authorized officers sign according to the rules." },
+                { sender: 'dc', text: "And a correctly signed order is legally valid?" },
+                { sender: 'stakeholder', text: "Yes. Its validity cannot be questioned on grounds of who signed." },
+                { sender: 'dc', text: "Article 166(3). Governor makes rules for government business?" },
+                { sender: 'stakeholder', text: "Yes. These are the Rules of Business. They structure government work." },
+                { sender: 'dc', text: "These rules allocate work among Ministers too?" },
+                { sender: 'stakeholder', text: "Yes. They also specify which files go to the CM or Governor." },
+                { sender: 'dc', text: "Does this cover the Governor's discretionary business?" },
+                { sender: 'stakeholder', text: "The rules cover allocation, except for the Governor's discretionary matters." },
+                { sender: 'dc', text: "This connects to Article 167. CM's duty to inform the Governor." },
+                { sender: 'stakeholder', text: "Yes. The CM must tell the Governor about all CoM decisions. (Art 167(a))." },
+                { sender: 'dc', text: "This includes decisions on administration and laws?" },
+                { sender: 'stakeholder', text: "Correct. Administration decisions and proposals for new laws." },
+                { sender: 'dc', text: "Can the Governor ask for specific information? Art 167(b)." },
+                { sender: 'stakeholder', text: "Yes. The Governor can ask for details on administration or laws." },
+                { sender: 'dc', text: "And the CM must provide the information?" },
+                { sender: 'stakeholder', text: "Yes, the CM has a duty to furnish the information the Governor seeks." },
+                { sender: 'dc', text: "What about Article 167(c)? A Minister's decision not seen by Council?" },
+                { sender: 'stakeholder', text: "If a Minister decides alone, the Governor can ask the CM." },
+                { sender: 'stakeholder', text: "The Governor can ask the CM to put the matter before the full Council." }, // Consecutive
+                { sender: 'dc', text: "Why is this provision important?" },
+                { sender: 'stakeholder', text: "It reinforces collective responsibility. Ensures major decisions are discussed." },
+                { sender: 'dc', text: "Now, Article 165. The Advocate-General (AG) for the State." },
+                { sender: 'stakeholder', text: "The Governor appoints the AG. Usually based on the government's advice." },
+                { sender: 'dc', text: "What qualification does the AG need? Art 165(1)." },
+                { sender: 'stakeholder', text: "The AG must qualify to be a High Court Judge." },
+                { sender: 'dc', text: "What is the AG's main job? Art 165(2)." },
+                { sender: 'stakeholder', text: "The AG advises the State Government on legal matters." },
+                { sender: 'stakeholder', text: "The AG performs legal duties the Governor assigns. Represents the state legally." }, // Consecutive
+                { sender: 'dc', text: "How long does the AG hold office? Art 165(3)." },
+                { sender: 'stakeholder', text: "The AG serves during the Governor's pleasure." },
+                { sender: 'dc', text: "Does this mean the AG usually changes with the government?" },
+                { sender: 'stakeholder', text: "Yes. Typically, the AG resigns when the government changes." },
+                { sender: 'dc', text: "Who decides the AG's pay?" },
+                { sender: 'stakeholder', text: "The Governor determines the AG's remuneration (pay)." },
+                { sender: 'dc', text: "Let's look at Article 162. State executive power extent." },
+                { sender: 'stakeholder', text: "State executive power covers subjects the State Legislature can make laws on." },
+                { sender: 'dc', text: "This means subjects in the State List and Concurrent List?" },
+                { sender: 'stakeholder', text: "Generally yes. The state government can act on these matters." },
+                { sender: 'dc', text: "Is there a limitation on Concurrent List items? Art 162 proviso." },
+                { sender: 'stakeholder', text: "Yes. If Parliament also makes law, Union executive power can limit state power." },
+                { sender: 'stakeholder', text: "The Constitution or Parliament's law must give power to the Union." }, // Consecutive
+                { sender: 'dc', text: "So, Union power prevails on concurrent matters if specified?" },
+                { sender: 'stakeholder', text: "Correct. State executive power is subject to Union power there." },
+                { sender: 'dc', text: "Article 160? President making rules for Governor's functions?" },
+                { sender: 'stakeholder', text: "This is for unforeseen situations not covered in the Constitution." },
+                { sender: 'stakeholder', text: "The President can arrange how the Governor functions in such cases." }, // Consecutive
+                { sender: 'dc', text: "Like a backup plan?" },
+                { sender: 'stakeholder', text: "Exactly. Ensures continuity if something unexpected happens." },
+                { sender: 'dc', text: "Finally, Article 152 definition of State. Any current impact?" },
+                { sender: 'stakeholder', text: "As discussed, the J&K part is historical. We follow Part VI for our state." },
+                { sender: 'dc', text: "Thank you, Madam. This clarifies the operational aspects well." },
+                { sender: 'stakeholder', text: "Good. Knowing these links is key for administration. Keep it up." },
+                { sender: 'dc', text: "Yes, Madam. Thank you." }
+            ],
+            adm: [
+                { sender: 'dc', text: "ADM, let's discuss state order implementation." },
+                { sender: 'stakeholder', text: "Yes Sir. Ready." },
+                { sender: 'dc', text: "When we issue orders based on State directives, whose authority do we cite?" },
+                { sender: 'stakeholder', text: "Sir, we mention the state Government Order (G.O.) number." },
+                { sender: 'stakeholder', text: "Those G.O.s state \"By order and in the name of the Governor\"." }, // Consecutive, escaped quotes
+                { sender: 'dc', text: "Correct. This follows Article 166(1). Formal executive action name." },
+                { sender: 'stakeholder', text: "Yes, Sir. We ensure our district orders follow state authentication rules." },
+                { sender: 'dc', text: "Good. Remember Article 166(2). Proper authentication makes orders valid." },
+                { sender: 'stakeholder', text: "Understood, Sir. It protects the order legally." },
+                { sender: 'dc', text: "Article 154(1). Governor exercises power through subordinate officers. That's us." },
+                { sender: 'stakeholder', text: "Yes, Sir. We execute the state government's decisions in the district." },
+                { sender: 'dc', text: "The power flows from the Governor, through the Ministers, to us." },
+                { sender: 'stakeholder', text: "Clear, Sir. We are part of the state executive machinery." },
+                { sender: 'dc', text: "Also, think about Article 158. Conditions like 'no office of profit'." },
+                { sender: 'stakeholder', text: "Yes, Sir. For the Governor's office." },
+                { sender: 'dc', text: "The principle applies to us too. Avoid conflicts of interest. Maintain integrity." },
+                { sender: 'stakeholder', text: "Point noted, Sir. It aligns with our service conduct rules." },
+                { sender: 'dc', text: "Exactly. Are there issues implementing orders in the Governor's name?" },
+                { sender: 'stakeholder', text: "No major issues, Sir. Sometimes language needs checking, but authority is clear." },
+                { sender: 'dc', text: "Ensure staff know this naming is a constitutional necessity. Not just words." },
+                { sender: 'stakeholder', text: "I will brief the staff in our next meeting, Sir." },
+                { sender: 'dc', text: "It reflects the power structure under Articles 154 and 166." },
+                { sender: 'stakeholder', text: "Understood completely, Sir." },
+                { sender: 'dc', text: "Good. Thank you, ADM." },
+                { sender: 'stakeholder', text: "Thank you, Sir." }
+            ],
+            dio: [
+                { sender: 'dc', text: "DIO, prepare a simple note on the Governor's role for staff." },
+                { sender: 'stakeholder', text: "Yes Sir. What points should I include? Use very simple language?" },
+                { sender: 'dc', text: "Yes, very simple. First, the Oath. Article 159. What does the Governor promise?" },
+                { sender: 'stakeholder', text: "Sir, the Governor promises to run the office faithfully." },
+                { sender: 'stakeholder', text: "To preserve, protect, defend the Constitution and law." }, // Consecutive
+                { sender: 'stakeholder', text: "To work for the people's well-being." }, // Consecutive
+                { sender: 'dc', text: "Good. Highlight 'protect the Constitution'. Who gives the oath?" },
+                { sender: 'stakeholder', text: "The High Court Chief Justice. Or the next senior-most judge if CJ is absent." },
+                { sender: 'dc', text: "Next, Pardoning Power. Article 161. Explain it simply." },
+                { sender: 'stakeholder', text: "Governor can forgive or reduce punishment for breaking state laws." },
+                { sender: 'dc', text: "Mention the types: pardon, reprieve, respite, remission, commute." },
+                { sender: 'stakeholder', text: "Okay Sir. Pardon = forgive fully. Commute = lighter sentence. Remission = less time." },
+                { sender: 'stakeholder', text: "Respite = less sentence for special reason. Reprieve = delay punishment." }, // Consecutive
+                { sender: 'dc', text: "Perfect. Can the Governor pardon death sentences?" },
+                { sender: 'stakeholder', text: "No Sir. Only President can pardon death sentence. Governor can delay or commute." },
+                { sender: 'dc', text: "Clear. Now, Ministers. Article 164. How are they appointed?" },
+                { sender: 'stakeholder', text: "Governor appoints the Chief Minister." },
+                { sender: 'stakeholder', text: "Governor appoints other Ministers on the CM's advice." }, // Consecutive
+                { sender: 'dc', text: "How long do they stay? Mention 'Governor's pleasure'?" },
+                { sender: 'stakeholder', text: "Yes Sir. They serve during the Governor's pleasure (usually needs CM's support)." },
+                { sender: 'dc', text: "What if a Minister is not an MLA/MLC? Art 164(4)." },
+                { sender: 'stakeholder', text: "They must get elected to the Legislature within 6 months." },
+                { sender: 'stakeholder', text: "If not, they lose the Minister post after 6 months." }, // Consecutive
+                { sender: 'dc', text: "Mention the limit on Minister numbers? Art 164(1A)." },
+                { sender: 'stakeholder', text: "Yes Sir. Max 15% of Assembly members. Minimum 12 Ministers (including CM)." },
+                { sender: 'dc', text: "Good. Briefly add Governor's qualifications? Art 157." },
+                { sender: 'stakeholder', text: "Indian Citizen. At least 35 years old." },
+                { sender: 'dc', text: "And appointment/term? Art 155, 156." },
+                { sender: 'stakeholder', text: "President appoints. Usual term 5 years. But serves during President's pleasure." },
+                { sender: 'dc', text: "Excellent. Draft this simply. Focus on clarity for everyone." },
+                { sender: 'stakeholder', text: "Yes Sir. I will make a clear, simple draft and share it." },
+                { sender: 'dc', text: "Thank you, DIO." },
+                { sender: 'stakeholder', text: "Welcome, Sir." }
+            ]
+        };
+
+        // --- Global Variables ---
+        let currentStakeholderKey = null;
+        let currentMessageIndex = 0;
+        let isTypingOrLoading = false; // Flag to prevent clicks during animations/stakeholder turns
+        let typingIntervalId = null; // To store the interval ID for typing simulation
+        let stakeholderTimeoutId = null; // To store timeout ID for stakeholder messages
+
+        // --- DOM References ---
+        const stakeholderSelectionDiv = document.getElementById('stakeholder-selection');
+        const chatContainerDiv = document.getElementById('chat-container');
+        const chatHeaderName = document.getElementById('stakeholder-name');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingDots = document.getElementById('loading-dots');
+
+        // --- Constants ---
+        const TYPING_SPEED_MS = 35; // Speed of DC typing animation
+        const STAKEHOLDER_REPLY_DELAY_MS = 2000; // Delay before first stakeholder reply shows
+        const STAKEHOLDER_CONSECUTIVE_DELAY_MS = 2000; // Delay between consecutive stakeholder messages
+
+        // --- Functions ---
+
+        /** Scrolls the chat messages div to the bottom smoothly */
+        function scrollToBottom() {
+            chatMessagesDiv.scrollTo({ top: chatMessagesDiv.scrollHeight, behavior: 'smooth' });
+        }
+
+        /** Displays a message in the chat window */
+        function displayMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'dc' ? 'user-message' : 'stakeholder-message');
+            // Replace explicit newlines (if any) with <br> for HTML display
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatMessagesDiv.appendChild(messageDiv);
+            // Remove loading dots just before showing the final message of a sequence
+            if(sender === 'stakeholder') {
+                 const nextMessage = conversations[currentStakeholderKey]?.[currentMessageIndex]; // Look ahead
+                 if(!nextMessage || nextMessage.sender === 'dc') {
+                      loadingDots.classList.add('hidden');
+                 }
+            } else {
+                 loadingDots.classList.add('hidden'); // Hide dots after DC sends
+            }
+            scrollToBottom();
+        }
+
+        /** Simulates the DC typing a message into the input bar */
+        function typeMessageInInput(text, callback) {
+            let charIndex = 0;
+            messageInput.value = ''; // Clear input
+            messageInput.placeholder = ''; // Clear placeholder during typing
+            isTypingOrLoading = true; // Set busy flag
+            sendButton.disabled = true; // Disable send button
+
+            if (typingIntervalId) clearInterval(typingIntervalId); // Clear previous interval if any
+
+            typingIntervalId = setInterval(() => {
+                if (charIndex < text.length) {
+                    messageInput.value += text.charAt(charIndex);
+                    charIndex++;
+                } else {
+                    clearInterval(typingIntervalId);
+                    typingIntervalId = null;
+                    // Short pause after typing before 'sending'
+                    setTimeout(() => {
+                        callback(text); // Execute the callback (onDcTypingComplete)
+                    }, 150);
+                }
+            }, TYPING_SPEED_MS);
+        }
+
+        /** Handles the process after the DC's message has been typed and sent */
+        function onDcTypingComplete(typedText) {
+            displayMessage('dc', typedText); // Show the DC's message in chat history
+            messageInput.value = ''; // Clear the input bar
+            messageInput.placeholder = "Waiting for response..."; // Update placeholder
+
+            // Check the next message *after* the one just sent
+            const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+
+            if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                // If stakeholder replies next, show loading dots and start their sequence after delay
+                isTypingOrLoading = true; // Set busy flag
+                sendButton.disabled = true;
+                loadingDots.classList.remove('hidden');
+                scrollToBottom(); // Scroll after showing dots
+                // Clear previous timeout just in case
+                if (stakeholderTimeoutId) clearTimeout(stakeholderTimeoutId);
+                stakeholderTimeoutId = setTimeout(processStakeholderSequence, STAKEHOLDER_REPLY_DELAY_MS);
+            } else {
+                // If DC speaks again next, or it's the end of the conversation
+                prepareForNextDcTurn();
+            }
+        }
+
+       /** Processes a sequence of one or more stakeholder messages */
+        function processStakeholderSequence() {
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                prepareForNextDcTurn(); // End of conversation or error state
+                return;
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+
+            if (messageData.sender === 'stakeholder') {
+                loadingDots.classList.add('hidden'); // Hide loading dots before showing message
+                isTypingOrLoading = true; // Stakeholder is "active"
+                sendButton.disabled = true;
+                messageInput.placeholder = "Waiting for response...";
+
+
+                // Display the stakeholder message
+                displayMessage('stakeholder', messageData.text);
+                currentMessageIndex++; // Move to the next message index
+
+                // Look ahead: Check if the *next* message is ALSO from the stakeholder
+                const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+                if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                    // If yes, schedule the next stakeholder message after a delay
+                    loadingDots.classList.remove('hidden'); // Show dots again between consecutive messages
+                    scrollToBottom();
+                    // Clear previous timeout just in case
+                    if (stakeholderTimeoutId) clearTimeout(stakeholderTimeoutId);
+                    stakeholderTimeoutId = setTimeout(processStakeholderSequence, STAKEHOLDER_CONSECUTIVE_DELAY_MS);
+                } else {
+                    // If the next message is from DC or the end, prepare for DC's turn
+                    prepareForNextDcTurn();
+                }
+            } else {
+                // If the current message is not from the stakeholder (e.g., DC's turn)
+                // Stop the sequence and prepare for DC's turn.
+                prepareForNextDcTurn();
+            }
+        }
+
+
+        /** Checks the next message and sets the UI state for DC's turn or ends chat */
+        function prepareForNextDcTurn() {
+            isTypingOrLoading = false; // No longer typing or waiting for stakeholder sequence
+            loadingDots.classList.add('hidden'); // Ensure loading dots are hidden
+
+            if (stakeholderTimeoutId) { // Clear any pending stakeholder timeout
+                 clearTimeout(stakeholderTimeoutId);
+                 stakeholderTimeoutId = null;
+            }
+
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                // Conversation ended
+                messageInput.placeholder = "Conversation ended.";
+                messageInput.value = ''; // Clear just in case
+                sendButton.disabled = true;
+            } else {
+                // Check whose turn is next
+                const nextMessageData = conversations[currentStakeholderKey][currentMessageIndex];
+                if (nextMessageData.sender === 'dc') {
+                    // It's DC's turn
+                    messageInput.placeholder = "Click Send for your next message...";
+                    messageInput.value = ''; // Clear just in case
+                    sendButton.disabled = false; // Enable send button
+                } else {
+                     // It should be stakeholder's turn (but prepareForNextDcTurn is called after their sequence)
+                     // So, defensively disable send if somehow it's stakeholder's turn again
+                     messageInput.placeholder = "Waiting for response...";
+                     messageInput.value = '';
+                     sendButton.disabled = true;
+                     console.warn("PrepareForNextDcTurn called unexpectedly when stakeholder might be next.");
+                     // If needed, could re-trigger processStakeholderSequence here, but current logic should prevent this.
+                }
+            }
+        }
+
+        /** Handles the click event on the Send button */
+        function handleSendClick() {
+            // Prevent action if already busy or not DC's turn
+            if (isTypingOrLoading || !currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length || conversations[currentStakeholderKey][currentMessageIndex].sender !== 'dc') {
+                return; // Do nothing if conditions not met
+            }
+
+            // Get the DC message *before* incrementing index
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+            currentMessageIndex++; // IMPORTANT: Increment index *before* typing starts for the *next* cycle
+
+            // Start the typing simulation, which will call onDcTypingComplete when done
+            typeMessageInInput(messageData.text, onDcTypingComplete);
+        }
+
+        /** Starts a specific conversation */
+        function startConversation(stakeholderKey, stakeholderName) {
+            const conversationData = conversations[stakeholderKey];
+            if (!conversationData || conversationData.length === 0) {
+                console.error("Conversation data not found or empty for key:", stakeholderKey);
+                return;
+            }
+            // Reset state
+            currentStakeholderKey = stakeholderKey;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+            if (typingIntervalId) clearInterval(typingIntervalId);
+            if (stakeholderTimeoutId) clearTimeout(stakeholderTimeoutId);
+            typingIntervalId = null;
+            stakeholderTimeoutId = null;
+
+
+            // Update UI elements
+            stakeholderSelectionDiv.classList.add('hidden');
+            chatContainerDiv.classList.remove('hidden');
+            chatHeaderName.textContent = stakeholderName;
+            chatMessagesDiv.innerHTML = ''; // Clear previous messages
+            messageInput.value = '';
+            messageInput.readOnly = true; // Input is always read-only for DC
+            loadingDots.classList.add('hidden');
+
+            // Determine the first turn
+            const firstMessage = conversationData[0];
+            if (firstMessage.sender === 'dc') {
+                prepareForNextDcTurn(); // Prepare for DC to click Send
+            } else if (firstMessage.sender === 'stakeholder') {
+                // If stakeholder starts, initiate their sequence immediately after a short delay
+                isTypingOrLoading = true; // Set busy flag
+                sendButton.disabled = true;
+                messageInput.placeholder = "Waiting for response...";
+                stakeholderTimeoutId = setTimeout(processStakeholderSequence, 500); // Start after a brief pause
+            }
+        }
+
+        /** Navigates back to the stakeholder selection screen */
+        function goBackToSelection() {
+            chatContainerDiv.classList.add('hidden');
+            stakeholderSelectionDiv.classList.remove('hidden');
+            // Reset state completely
+            currentStakeholderKey = null;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+            if (typingIntervalId) clearInterval(typingIntervalId);
+            if (stakeholderTimeoutId) clearTimeout(stakeholderTimeoutId);
+            typingIntervalId = null;
+            stakeholderTimeoutId = null;
+            messageInput.value = '';
+            messageInput.placeholder = 'Select a conversation';
+            sendButton.disabled = true;
+            chatMessagesDiv.innerHTML = ''; // Clear messages
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendClick);
+
+        // --- Initial Setup ---
+        // Chat container is hidden by default via CSS class
+    </script>
+</body>
+</html>
