@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Stakeholder Chat - Congress Article</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #DADADA; /* Lighter grey background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #stakeholder-selection {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px; /* Limit width */
+        }
+
+        #stakeholder-selection h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #stakeholder-selection button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: #075e54;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #stakeholder-selection button:hover {
+            background-color: #128c7e;
+        }
+
+        #chat-container {
+            width: 90%;
+            max-width: 400px; /* Narrower for mobile feel */
+            height: 85vh; /* Fixed height */
+            max-height: 700px; /* Max height */
+            background-color: #e5ddd5;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        #chat-header {
+            background-color: #075e54;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center; /* Center items vertically */
+            border-bottom: 1px solid #054e46;
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        #back-button {
+            font-size: 1.5em;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        #stakeholder-name {
+            flex-grow: 1; /* Take available space */
+            text-align: left; /* Align name to left */
+        }
+
+        #chat-header .status {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #dcf8c6;
+            margin-left: 10px; /* Space before status */
+        }
+
+        #chat-messages {
+            flex-grow: 1; /* Takes up remaining vertical space */
+            padding: 15px;
+            overflow-y: auto; /* Enable scrolling */
+            /* Optional WhatsApp background */
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-size: contain;
+            display: flex;
+            flex-direction: column; /* Messages stack vertically */
+        }
+
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 80%; /* Slightly wider bubbles */
+            word-wrap: break-word;
+            clear: both;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            position: relative; /* Needed for pseudo-elements if used */
+            font-size: 0.95em; /* Slightly smaller text */
+        }
+
+        .user-message {
+            background-color: #dcf8c6; /* WhatsApp green bubble */
+            margin-left: auto;
+            float: right; /* Align right */
+            border-top-right-radius: 0; /* Characteristic notch */
+        }
+
+        .stakeholder-message {
+            background-color: #ffffff; /* White bubble */
+            margin-right: auto;
+            float: left; /* Align left */
+            border-top-left-radius: 0; /* Characteristic notch */
+        }
+
+        /* Loading Dots Styling - uses stakeholder style */
+        #loading-dots {
+            /* Inherits .stakeholder-message styles */
+            display: flex;
+            justify-content: flex-start;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            float: left;
+            clear: both;
+            width: fit-content;
+            min-height: 20px;
+            align-items: center;
+        }
+
+        #loading-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #aaa;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 0.8s infinite alternate;
+        }
+
+        #loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        #loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+
+        /* Input Area Styling */
+        #chat-input {
+            display: flex;
+            padding: 8px 10px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            flex-shrink: 0; /* Prevent input area shrinking */
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            margin-right: 8px;
+            font-size: 15px;
+            background-color: #fff;
+            resize: none;
+            line-height: 1.4;
+            color: #333;
+            /* Ensure text is visible when readonly */
+            -webkit-text-fill-color: #333;
+            opacity: 1;
+        }
+
+        #message-input[readonly] {
+             background-color: #fff;
+             cursor: default;
+             color: #333; /* Ensure text is visible */
+        }
+        #message-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+
+        #send-button {
+            padding: 0;
+            width: 44px;
+            height: 44px;
+            background-color: #128c7e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        #send-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #send-button:hover:not(:disabled) {
+             background-color: #075e54;
+        }
+        #send-button:disabled {
+            background-color: #99cec9;
+            cursor: not-allowed;
+        }
+
+        /* Utility class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With:</h2>
+        <button onclick="startConversation('analyst', 'Local Political Analyst (Dr. Sharma)')">Political Analyst (Dr. Sharma)</button>
+        <button onclick="startConversation('ceo', 'Chief Executive Officer (CEO), ZP')">CEO, Zilla Parishad</button>
+        <button onclick="startConversation('sp', 'Superintendent of Police (SP)')">Superintendent of Police (SP)</button>
+        <button onclick="startConversation('dio', 'District Information Officer (DIO)')">District Information Officer (DIO)</button>
+        <button onclick="startConversation('ps', 'Principal Secretary (PS)')">Principal Secretary (PS)</button>
+    </div>
+
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Online</span>
+        </div>
+        <div id="chat-messages">
+            <!-- Chat messages will appear here -->
+        </div>
+        <!-- Loading dots element -->
+        <div id="loading-dots" class="hidden stakeholder-message">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="chat-input">
+            <!-- Input field shows simulated typing -->
+            <input type="text" id="message-input" placeholder="Click Send for your next message..." readonly>
+            <button id="send-button" disabled>
+                <!-- Simple Send Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Conversation Data (Congress Article Chats) ---
+        const conversations = {
+            analyst: [
+                { sender: 'dc', text: "Dr. Sharma, thanks for coming. 🙏" },
+                { sender: 'dc', text: "I read that Congress article. Many big words! 🧐" }, // Consecutive DC
+                { sender: 'dc', text: "Can you explain it simply? What's the main idea?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Hello Collector Sahab! Happy to help. 😊" },
+                { sender: 'stakeholder', text: "Think of the party feeling weak now." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Especially in Gujarat, where they lost long ago." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "They chose Ahmedabad for its history. Freedom struggle vibes! ✨" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "It's like using a symbol to boost morale." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Got it. Symbols matter in politics." },
+                { sender: 'dc', text: "But what practical steps did they discuss?" }, // Consecutive DC
+                { sender: 'dc', text: "The article mentioned 'organisational reforms'. What is that? 🤔" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes, that's the first big point." },
+                { sender: 'stakeholder', text: "They feel Delhi bosses decide too much." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "They call it 'high-command culture'. Like a remote control. 😉" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Ah, the bosses in Delhi calling the shots." },
+                { sender: 'dc', text: "So, what change do they want now?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "They want to give district leaders more power. 💪" },
+                { sender: 'stakeholder', text: "Make District Congress Committees (DCCs) important." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Let districts decide things and be responsible." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Like building a house on a strong foundation." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Interesting. Give power to lower levels. 'Decentralization'." },
+                { sender: 'dc', text: "Sounds good. But won't it create problems?" }, // Consecutive DC
+                { sender: 'dc', text: "The article mentions 'factionalism'. Groups fighting inside? 🥊" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Exactly! That's the big question, Sir! 😅" },
+                { sender: 'stakeholder', text: "Will district power stop the internal fights?" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Or will it create more small fights locally?" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "The article also doubts if it will work." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "So, this move could even backfire? Risky." },
+                { sender: 'dc', text: "What was the second main point? 'Ideological clarity'?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes! They want to strongly support certain values again." },
+                { sender: 'stakeholder', text: "First, Secularism. Govt treats all religions equally. Neutral. 🤝" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Second, Pluralism. India has many cultures. Respect all diversity. 🇮🇳" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Third, Federalism. Share power between Centre and States. Not just Delhi." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Fourth, Inclusive Growth. Development helps everyone, not just rich people. 💰➡️👥" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Okay, clear now. These are old Congress ideas." },
+                { sender: 'dc', text: "Maybe they feel these values are weak today?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "That's exactly what they argue, Sir." },
+                { sender: 'stakeholder', text: "They present themselves as defenders of these values." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "What about Rahul Gandhi's points? Caste census? Quotas?" },
+                { sender: 'stakeholder', text: "Yes, a big plan. They want a count of all castes nationwide. 📊" },
+                { sender: 'stakeholder', text: "Why? To get data for helping specific groups. 'Social Justice'." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "They also want to end the 50% limit on job/education quotas." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "This might attract some specific voter groups." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "That's a big policy idea. Could cause debates." },
+                { sender: 'dc', text: "What challenges does the article mention for the party?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Big challenges, Sir!" },
+                { sender: 'stakeholder', text: "1. The internal fighting ('factionalism'). Very serious." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "2. Giving power to districts is hard. Why?" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Because money, media, strategy are becoming more central now. Strange contradiction! 🤔" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "3. They need a clear plan for the future." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Something exciting for young people and middle class. 🚀" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Not just talking about the past ('nostalgia')." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "4. They need fresh ideas, clear strategy, and discipline." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "So, the Ahmedabad meeting was like a start?" },
+                { sender: 'dc', text: "An announcement saying \"We need to change\"?" }, // Consecutive DC
+                { sender: 'dc', text: "But not a detailed plan on 'how' to change?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "You got it perfectly, Collector Sahab! 👍" },
+                { sender: 'stakeholder', text: "It's just the beginning. A 'work in progress'." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Will it bring real change? Or just another meeting?" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "We have to wait and see. The next months are key." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Understood. Symbolism, district power idea, values, social justice focus." },
+                { sender: 'dc', text: "But big doubts on execution, unity, and future vision." }, // Consecutive DC
+                { sender: 'dc', text: "Thanks, Dr. Sharma! You made it very simple. 🙏 Always helpful!" }, // Consecutive DC
+                { sender: 'stakeholder', text: "My pleasure, Sir! Politics is often common sense. 😉 Good day!" }
+            ],
+            ceo: [
+                { sender: 'dc', text: "CEO Sahab, thinking about local governance." },
+                { sender: 'dc', text: "That Congress article mentioned empowering district bodies. 🤔" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Good Morning, Sir. Yes, I saw that piece." },
+                { sender: 'stakeholder', text: "It sounds a bit like our Panchayat Raj system." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Exactly my thought. They want district units as the 'bedrock'." },
+                { sender: 'dc', text: "From your ZP work, what does 'empowering grassroots' truly mean?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, it means giving local bodies real power." },
+                { sender: 'stakeholder', text: "Power to plan projects based on local needs." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Power to manage funds for those projects. 💰" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "And power to execute them well. More freedom. Less top-down orders." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Sounds good on paper. But the article warned about 'factionalism'." },
+                { sender: 'dc', text: "We see local fights in Panchayat elections too, right? ⚔️" }, // Consecutive DC
+                { sender: 'dc', text: "Could giving districts more power make these fights worse?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Big risk there, Sir! 😟 Definitely a concern." },
+                { sender: 'stakeholder', text: "If power goes down without clear rules..." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "... existing local fights might increase. (Caste, family rivalries etc.)" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Work could get stuck. Decisions might be biased." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "That's my worry too. Article asks: will it help or hurt?" },
+                { sender: 'dc', text: "What does your ZP experience suggest?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, it really depends how they do it." },
+                { sender: 'stakeholder', text: "Empowering only existing strongmen? Things get worse. 😠" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Involving the whole community? Using checks? Might help." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "But how they implement is the main thing. 🔑" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "The \"How\" is always vital! Article mentions squeezing regional leaders." },
+                { sender: 'dc', text: "Squeezing them between local leaders and top bosses." }, // Consecutive DC
+                { sender: 'dc', text: "Is it like how ZP sometimes deals directly with Panchayats? Bypassing block level? 😉" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Ha! Sometimes happens, Sir. 😉 A delicate balance!" },
+                { sender: 'stakeholder', text: "Direct links can be good. But can cause friction too." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "It needs very careful handling." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Another point: Central resources vs District power. We see this daily." },
+                { sender: 'dc', text: "We ask Panchayats to plan locally (GPDPs)." }, // Consecutive DC
+                { sender: 'dc', text: "But funds often come tied to specific schemes. Right? 💰🔗" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Absolutely Sir. MGNREGA funds have rules. Finance grants have rules." },
+                { sender: 'stakeholder', text: "True local power needs flexible money too. Untied funds." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Exactly. So, this party wants district power." },
+                { sender: 'dc', text: "But can they manage money flow? And messaging from the top?" }, // Consecutive DC
+                { sender: 'dc', text: "That seems like a very tough challenge." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Very tough, Sir. Political ads, social media are very central now." },
+                { sender: 'stakeholder', text: "Hard to run local campaigns without central support. Needs a common story." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Let's link this to our work. Imagine empowering a Panchayat fully." },
+                { sender: 'dc', text: "Say, for managing a local school (73rd Amendment idea)." }, // Consecutive DC
+                { sender: 'dc', text: "What problems might we face, like the article suggests?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Problems could be:" },
+                { sender: 'stakeholder', text: "1. Local groups fighting for school committee control. 😠" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "2. Teachers resisting local checks. They prefer state control. 🧑‍🏫" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "3. School funds tied to central rules (SSA norms). 📚 (Central resource issue)" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "4. Ensuring poor people also participate. Not just the powerful. (Inclusive issue)" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Spot on, CEO. These political debates mirror our admin challenges." },
+                { sender: 'dc', text: "If decentralization has to work (politically or here)..." }, // Consecutive DC
+                { sender: 'dc', text: "...we need ways to manage fights, ensure duty, provide support." }, // Consecutive DC
+                { sender: 'stakeholder', text: "True Sir. Maybe better local complaint systems?" },
+                { sender: 'stakeholder', text: "Training for elected Panchayat members?" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "And definitely more untied funds. Just thinking aloud. 🤔" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Good ideas. The article mentioned 'organisational discipline'." },
+                { sender: 'dc', text: "That applies to us too. Ensure local bodies follow rules. Work for goals." }, // Consecutive DC
+                { sender: 'dc', text: "Making sure everyone pulls in the same direction! Not easy! 😄" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Not easy at all, Sir. Needs constant watch and help." },
+                { sender: 'stakeholder', text: "It's a continuous effort. Like the article called it: 'work in progress'." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Well put. Let's remember this for our ZP/Panchayat work." },
+                { sender: 'dc', text: "We need local empowerment that actually delivers results. 👍" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes Sir. Will keep this in mind. Thank you. 🙏" }
+            ],
+            sp: [
+                { sender: 'dc', text: "SP Sahab, that Congress article raised a point." },
+                { sender: 'dc', text: "They talk 'social justice', caste census, changing quota limits." }, // Consecutive DC
+                { sender: 'dc', text: "What law and order issues should we expect from this? 🤔" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Good Morning, Sir. Saw that. These are sensitive topics." },
+                { sender: 'stakeholder', text: "1. Caste Census talk: Might increase focus on caste." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Could cause tension between groups. Need to watch social media. 📱🔥" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "2. Quota Cap talk: Changing reservations often brings protests." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Some protest for it, some against it. Be ready for crowds. 👮‍♂️" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Yes, caste issues can become volatile quickly." },
+                { sender: 'dc', text: "How can we ensure peaceful discussion if debates arise? Proactive steps?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, key police actions:" },
+                { sender: 'stakeholder', text: "Gather intelligence. Know who is planning what. 🕵️‍♀️" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Talk to community leaders. Use Peace Committees. Dialogue helps. 🤝" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Increase police visibility in sensitive areas. Deters trouble." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Act strictly against hate speech or violence. No bias. Zero tolerance. ⚖️" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Good plan. The article also mentions party 'factionalism'. Internal fights." },
+                { sender: 'dc', text: "Does political infighting sometimes cause law and order problems for us?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Definitely Sir. Factions often clash. Especially during elections." },
+                { sender: 'stakeholder', text: "Or during fights for local power. One group tries to dominate." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Remember those small clashes near Block X office last year? Political rivalry." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Yes, I remember. So, the party wants district power." },
+                { sender: 'dc', text: "If local factions get more power, could they become more aggressive?" }, // Consecutive DC
+                { sender: 'dc', text: "Leading to more policing work for your team? 👀" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Possible, Sir. More power means higher stakes locally." },
+                { sender: 'stakeholder', text: "Factions might fight harder. Maybe use force or create disturbances." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "We need to watch this closely if it happens." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "The article mentions 'Secularism' and 'Pluralism'." },
+                { sender: 'dc', text: "How does police work uphold these values practically?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, for us, it means fair policing for all." },
+                { sender: 'stakeholder', text: "Protect everyone, regardless of religion or community. Equal safety." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Protect religious places. Ensure peaceful festivals for all. 🙏" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Treat every citizen the same under law. That's our duty." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Well explained. Impartiality is the key word." },
+                { sender: 'dc', text: "What about 'inclusive growth'? Does policing play a role? Seems development-focused." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Indirect role, Sir. Safety is needed for growth." },
+                { sender: 'stakeholder', text: "If people feel unsafe, they can't work or do business." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Our work provides the basic stability. Allows everyone to participate. 👍" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Think women's safety, stopping illegal demands ('hafta'). Security enables inclusion." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Good point. Stability allows growth for all." },
+                { sender: 'dc', text: "Back to caste census/quotas. If data shows big changes..." }, // Consecutive DC
+                { sender: 'dc', text: "... what's the immediate risk we should prepare for?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, immediate risk: competing demands based on new data." },
+                { sender: 'stakeholder', text: "Some groups might demand more quotas loudly." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Others might resist changes fiercely. Counter-protests likely." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Fake news spreading online will be a huge problem. Spreads like fire! 🔥💨" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Right. Fake news is a major issue." },
+                { sender: 'dc', text: "So, we need DIO's team to monitor social media." }, // Consecutive DC
+                { sender: 'dc', text: "And quickly correct fake news. Needs strong coordination with you." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Yes Sir, very critical. Need a joint quick-response system. 📞" },
+                { sender: 'stakeholder', text: "We flag sensitive content; DIO handles public messages/fact-checks." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Let's set up that system. Discuss in our next meeting." },
+                { sender: 'dc', text: "Thanks, SP Sahab. Good to anticipate these issues. Stay alert." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Always Sir. We will maintain vigilance. Thank you. 🙏👮‍♂️" }
+            ],
+            dio: [
+                { sender: 'dc', text: "DIO, that Congress article talked about 'messaging'." },
+                { sender: 'dc', text: "And achieving 'ideological clarity'. Interesting." }, // Consecutive DC
+                { sender: 'dc', text: "How do parties usually spread their message effectively?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Good Morning, Sir. They use many methods." },
+                { sender: 'stakeholder', text: "1. Big Media: Ads, news reports on TV, newspapers. 📰📺" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "2. Social Media: Posts, videos on WhatsApp, FB. Very key now. 💻📱" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "3. Ground Work: Rallies, meetings, workers visiting homes. 🚶‍♂️🗣️" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "4. Internal Memos: Telling party workers what to say. Trying for one voice! 😄" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Ha! Trying is right! 😉 The article says Congress stressed values." },
+                { sender: 'dc', text: "Values like secularism, pluralism, federalism." }, // Consecutive DC
+                { sender: 'dc', text: "How do you communicate abstract ideas simply to people?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Tricky, Sir. They often use:" },
+                { sender: 'stakeholder', text: "* Symbols: Like meeting place (Ahmedabad's history). Makes people feel something. ✨" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Stories: Telling stories that show the value. E.g., harmony stories for secularism." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Comparisons: \"We are like this; they are like that\". Simple contrast." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Slogans: Short, catchy lines. Easy to recall and share. Like jingles! 🎶" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Makes sense. Use stories, symbols, slogans." },
+                { sender: 'dc', text: "Article also flagged 'factionalism' risk. Internal fights." }, // Consecutive DC
+                { sender: 'dc', text: "How bad is it if a party sends mixed signals? Public view?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Very bad Sir! Looks messy. 😟 Confuses people." },
+                { sender: 'stakeholder', text: "Makes the party seem weak, divided. Media loves showing fights." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Public loses trust. A clear, united message works best. Consistency is key.🔑" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "So, their plan for district power is risky for messaging too?" },
+                { sender: 'dc', text: "Different district leaders might say different things? 🤔" }, // Consecutive DC
+                { sender: 'dc', text: "Or ignore the main message? Focus only on local stuff?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Exactly Sir. That's the risk of decentralizing messages." },
+                { sender: 'stakeholder', text: "Need strong internal communication. Clear guidelines from top." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "But also allow some local touch. A tough balance! 🤹‍♂️" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Article also mentioned needing a 'forward-looking vision'." },
+                { sender: 'dc', text: "Especially for youth, middle class. Warning against 'nostalgia'." }, // Consecutive DC
+                { sender: 'dc', text: "How should political communication target these groups?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, target youth/middle class needs focus on:" },
+                { sender: 'stakeholder', text: "* Future hopes: Jobs, growth, tech, better life. 🚀" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Modern ways: Social media, videos, maybe memes? Use their platforms." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Their issues: Environment, good governance, city problems." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Simple language: Direct talk. Less old-style speeches." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "* Avoid: Just talking about past glories. Needs relevance today." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Good points. So, just talking about 'legacy' isn't enough?" },
+                { sender: 'dc', text: "If they don't connect it to current hopes, message fails?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Precisely, Sir. Legacy is history. Vision is future. Need both. 📜➡️✨" },
+                { sender: 'stakeholder', text: "Show how past values guide future plans. That connects." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Okay. Now think about our government communication." },
+                { sender: 'dc', text: "How do we ensure our messages are clear, consistent?" }, // Consecutive DC
+                { sender: 'dc', text: "Avoid the same problems? Reach everyone effectively?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Sir, for us, key things:" },
+                { sender: 'stakeholder', text: "1. One Voice: All departments say the same core thing. Coordination needed. Shared FAQs help. 🤔" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "2. Simple Words: No jargon! Explain benefits clearly. Like simple press notes." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "3. Many Channels: Use newspapers, radio, social media, meetings. Reach all. 📻📱🗣️" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "4. Listen: Hear public feedback. Correct wrong info fast. Monitor social media.👂" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "5. Show Results: Use real stories, data. Show schemes working. Makes it real. 👍" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Excellent checklist, DIO. Let's review our strategy using this." },
+                { sender: 'dc', text: "Need to be fast against fake news. SP also worried about this." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Agreed Sir. Clear, fast communication is vital for administration too." },
+                { sender: 'stakeholder', text: "I can make a short note reviewing our current methods. 📝" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Yes, please do that. Thank you, DIO! 👍" },
+                { sender: 'stakeholder', text: "Welcome, Sir! 🙏" }
+            ],
+            ps: [
+                { sender: 'dc', text: "Ma'am, read that Congress strategy article. Interesting points." },
+                { sender: 'dc', text: "They want district power. Reaffirm old values." }, // Consecutive DC
+                { sender: 'dc', text: "Some points seem relevant for administration too." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Afternoon, Collector. Politics mirrors administration sometimes." },
+                { sender: 'stakeholder', text: "What parallels are you drawing?" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Ma'am, their main tension: District power vs Central control." },
+                { sender: 'dc', text: "Resources, messages, plans often stay central in politics now." }, // Consecutive DC
+                { sender: 'dc', text: "We face this too. State/Central schemes have tight rules. Limits local choice." }, // Consecutive DC
+                { sender: 'stakeholder', text: "True, Collector. A constant governance challenge." },
+                { sender: 'stakeholder', text: "Balancing state goals with local needs and freedom." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "73rd/74th Amendments pushed decentralization. But challenges remain." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Capacity, funds, sometimes political interest varies." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Article asks: Will district power worsen party fights ('factionalism')?" },
+                { sender: 'dc', text: "Do we worry administratively too? Can local autonomy cause issues? 🤔" }, // Consecutive DC
+                { sender: 'dc', text: "Like ignoring state plans? Or local leaders misusing power?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "A valid concern. That's why we need rules and checks." },
+                { sender: 'stakeholder', text: "Monitoring systems are essential. Accountability matters." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Decentralization needs a framework. Not a free-for-all." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Finding that right balance is our job! 😉" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Indeed, Ma'am! 😄 The article also stressed a 'clear road map'." },
+                { sender: 'dc', text: "Appealing to youth, middle class. Not just 'nostalgia'." }, // Consecutive DC
+                { sender: 'dc', text: "Government also needs to keep improving, right? Meet aspirations." }, // Consecutive DC
+                { sender: 'dc', text: "Like our digital services, easy business rules?" }, // Consecutive DC
+                { sender: 'stakeholder', text: "Precisely. Citizen expectations grow. Especially young people." },
+                { sender: 'stakeholder', text: "They want fast, clear, tech-based governance." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Our portals, helplines, land record work aim for this." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "We must look forward. Not just rely on past work. 🚀" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Congress focus on social justice (caste census, quotas) is notable." },
+                { sender: 'dc', text: "This could affect administration. Managing tensions. Ensuring data is right." }, // Consecutive DC
+                { sender: 'dc', text: "Needs careful district-level handling. SP and I discussed L&O aspects." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Good you are thinking ahead, Collector." },
+                { sender: 'stakeholder', text: "Big policy changes need careful planning. Managing social impact." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Data accuracy, fair process, talking to communities are key." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "State HQ will guide. But district execution and peace-keeping are crucial." }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Agreed, Ma'am. Article says party's effort is 'work in progress'." },
+                { sender: 'dc', text: "Maybe true for good decentralization in administration too?" }, // Consecutive DC
+                { sender: 'dc', text: "Needs non-stop effort, change, and learning from experience." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Well said. It's a journey, not a destination." },
+                { sender: 'stakeholder', text: "We also need 'imagination, strategic clarity, organisational discipline'." }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Applying the article's words to our context!" }, // Consecutive Stakeholder
+                { sender: 'stakeholder', text: "Keep sharing your ground inputs, Collector. They help us. 👍" }, // Consecutive Stakeholder
+                { sender: 'dc', text: "Thank you, Ma'am. Will do. Helps to see political strategy." },
+                { sender: 'dc', text: "It gives perspective on our own administrative world." }, // Consecutive DC
+                { sender: 'stakeholder', text: "Exactly. Understand the big picture. Carry on. 🙏" }
+            ]
+        };
+
+
+        // --- Global Variables ---
+        let currentStakeholderKey = null;
+        let currentMessageIndex = 0;
+        let isTypingOrLoading = false; // Flag to prevent clicks during animations/stakeholder turns
+        let typingIntervalId = null; // To store the interval ID for typing simulation
+
+        // --- DOM References ---
+        const stakeholderSelectionDiv = document.getElementById('stakeholder-selection');
+        const chatContainerDiv = document.getElementById('chat-container');
+        const chatHeaderName = document.getElementById('stakeholder-name');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingDots = document.getElementById('loading-dots');
+
+        // --- Constants ---
+        const TYPING_SPEED_MS = 35; // Speed of DC typing animation
+        const STAKEHOLDER_MESSAGE_DELAY_MS = 2000; // Delay between consecutive stakeholder messages
+        const LOADING_DOTS_DELAY_MS = 500; // Short delay before showing dots
+        const POST_TYPING_PAUSE_MS = 150; // Short pause after typing before sending
+
+        // --- Functions ---
+
+        /** Scrolls the chat messages div to the bottom smoothly */
+        function scrollToBottom() {
+            // A slight delay can help ensure the element is fully rendered before scrolling
+            setTimeout(() => {
+                 chatMessagesDiv.scrollTo({ top: chatMessagesDiv.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        /** Displays a message in the chat window */
+        function displayMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'dc' ? 'user-message' : 'stakeholder-message');
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Handle newlines
+            chatMessagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        /** Simulates the DC typing a message into the input bar */
+        function typeMessageInInput(text, callback) {
+            let charIndex = 0;
+            messageInput.value = ''; // Clear input
+            messageInput.placeholder = 'Typing...'; // Show typing indicator
+            isTypingOrLoading = true; // Set busy flag
+            sendButton.disabled = true; // Disable send button
+
+            if (typingIntervalId) clearInterval(typingIntervalId); // Clear previous interval if any
+
+            typingIntervalId = setInterval(() => {
+                if (charIndex < text.length) {
+                    messageInput.value += text.charAt(charIndex);
+                    charIndex++;
+                } else {
+                    clearInterval(typingIntervalId);
+                    typingIntervalId = null;
+                    // Short pause after typing before sending
+                    setTimeout(() => {
+                        callback(text); // Execute the callback (usually onDcTypingComplete)
+                    }, POST_TYPING_PAUSE_MS);
+                }
+            }, TYPING_SPEED_MS);
+        }
+
+        /** Handles the process after the DC's message has been typed */
+        function onDcTypingComplete(typedText) {
+            displayMessage('dc', typedText); // Show the DC's message in chat history
+            messageInput.value = ''; // Clear the input bar
+            messageInput.placeholder = "Waiting for response..."; // Update placeholder
+
+            // Check the next message
+            const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+
+            if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                // If stakeholder replies next, show loading dots and start their sequence
+                loadingDots.classList.remove('hidden');
+                scrollToBottom(); // Scroll after showing dots
+                setTimeout(processStakeholderSequence, LOADING_DOTS_DELAY_MS); // Delay before stakeholder starts "replying"
+            } else if (nextMessageData && nextMessageData.sender === 'dc') {
+                // If DC speaks again next, immediately prepare for the next DC turn
+                prepareForNextDcTurn();
+            } else {
+                // End of conversation after DC's message
+                prepareForNextDcTurn(); // This will handle the end state
+            }
+        }
+
+        /** Processes a sequence of one or more stakeholder messages */
+        function processStakeholderSequence() {
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                prepareForNextDcTurn(); // End of conversation or error state
+                return;
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+
+            if (messageData.sender === 'stakeholder') {
+                loadingDots.classList.add('hidden'); // Hide loading dots before showing message
+                isTypingOrLoading = true; // Stakeholder is "active"
+                sendButton.disabled = true;
+
+                // Display the stakeholder message
+                displayMessage('stakeholder', messageData.text);
+                currentMessageIndex++; // Move to the next message index
+
+                // Look ahead: Check if the *next* message is ALSO from the stakeholder
+                const nextMessageData = conversations[currentStakeholderKey]?.[currentMessageIndex];
+                if (nextMessageData && nextMessageData.sender === 'stakeholder') {
+                    // If yes, schedule the next stakeholder message after a delay
+                    setTimeout(processStakeholderSequence, STAKEHOLDER_MESSAGE_DELAY_MS);
+                } else {
+                    // If the next message is from DC or the end, prepare for DC's turn
+                    prepareForNextDcTurn();
+                }
+            } else {
+                // If the current message is not from the stakeholder (e.g., DC or end),
+                // stop the sequence and prepare for DC's turn.
+                prepareForNextDcTurn();
+            }
+        }
+
+
+        /** Checks the next message and sets the UI state (enables send button or ends chat) */
+        function prepareForNextDcTurn() {
+            isTypingOrLoading = false; // No longer typing or waiting for stakeholder sequence
+            loadingDots.classList.add('hidden'); // Ensure loading dots are hidden
+
+            if (!currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length) {
+                // Conversation ended
+                messageInput.placeholder = "Conversation ended.";
+                sendButton.disabled = true;
+            } else {
+                // Check whose turn is next
+                const nextMessageData = conversations[currentStakeholderKey][currentMessageIndex];
+                if (nextMessageData.sender === 'dc') {
+                    // It's DC's turn
+                    messageInput.placeholder = "Click Send for your next message...";
+                    sendButton.disabled = false; // Enable send button
+                } else {
+                    // If it's stakeholder's turn next (should only happen if they start)
+                    messageInput.placeholder = "Waiting for response...";
+                    sendButton.disabled = true;
+                    // This case is usually handled by onDcTypingComplete or startConversation
+                    // If needed, could trigger loading dots here again.
+                    // console.warn("PrepareForNextDcTurn called when stakeholder is next.");
+                }
+            }
+        }
+
+        /** Handles the click event on the Send button */
+        function handleSendClick() {
+            // Prevent action if already busy or not DC's turn
+            if (isTypingOrLoading || !currentStakeholderKey || currentMessageIndex >= conversations[currentStakeholderKey].length || conversations[currentStakeholderKey][currentMessageIndex].sender !== 'dc') {
+                return; // Do nothing if conditions not met
+            }
+
+            const messageData = conversations[currentStakeholderKey][currentMessageIndex];
+            currentMessageIndex++; // IMPORTANT: Increment index *before* typing starts
+
+            // Start the typing simulation, which will call onDcTypingComplete when done
+            typeMessageInInput(messageData.text, onDcTypingComplete);
+        }
+
+        /** Starts a specific conversation */
+        function startConversation(stakeholderKey, stakeholderName) {
+            const conversationData = conversations[stakeholderKey];
+            if (!conversationData || conversationData.length === 0) {
+                console.error("Conversation data not found or empty for key:", stakeholderKey);
+                return;
+            }
+            currentStakeholderKey = stakeholderKey;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+
+            // Update UI elements
+            stakeholderSelectionDiv.classList.add('hidden');
+            chatContainerDiv.classList.remove('hidden');
+            chatHeaderName.textContent = stakeholderName;
+            chatMessagesDiv.innerHTML = ''; // Clear previous messages
+            messageInput.value = '';
+            messageInput.readOnly = true; // Keep it readonly always for simulation
+            loadingDots.classList.add('hidden');
+
+            // Determine the first turn
+            const firstMessage = conversationData[0];
+            if (firstMessage.sender === 'dc') {
+                prepareForNextDcTurn(); // Prepare for DC to click Send
+            } else if (firstMessage.sender === 'stakeholder') {
+                // If stakeholder starts, initiate their sequence immediately
+                isTypingOrLoading = true; // Set busy flag
+                sendButton.disabled = true;
+                messageInput.placeholder = "Waiting for response...";
+                // No loading dots needed if stakeholder speaks first instantly
+                // Display the first message immediately
+                processStakeholderSequence();
+            }
+        }
+
+        /** Navigates back to the stakeholder selection screen */
+        function goBackToSelection() {
+            chatContainerDiv.classList.add('hidden');
+            stakeholderSelectionDiv.classList.remove('hidden');
+            currentStakeholderKey = null;
+            currentMessageIndex = 0;
+            isTypingOrLoading = false;
+            if (typingIntervalId) { // Clear any ongoing typing animation
+                clearInterval(typingIntervalId);
+                typingIntervalId = null;
+            }
+            // Reset input state
+            messageInput.placeholder = "Click Send for your next message...";
+            sendButton.disabled = true;
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendClick);
+
+        // --- Initial Setup ---
+        // Chat container hidden by default via CSS file
+    </script>
+</body>
+</html>
