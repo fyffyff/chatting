@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Chat History - Wikipedia Ruling</title>
+    <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #DADADA; /* Lighter grey background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Stakeholder Selection Screen */
+        #stakeholder-selection {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        #stakeholder-selection h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        #stakeholder-selection button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #stakeholder-selection button:hover {
+            background-color: #128c7e; /* Darker Green */
+        }
+
+        /* Chat Container */
+        #chat-container {
+            width: 90%;
+            max-width: 400px; /* Narrower for mobile feel */
+            height: 85vh; /* Fixed height */
+            max-height: 700px; /* Max height */
+            background-color: #e5ddd5; /* WhatsApp chat background color */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* Chat Header */
+        #chat-header {
+            background-color: #075e54; /* WhatsApp Green */
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #054e46;
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        #back-button {
+            font-size: 1.5em;
+            margin-right: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #stakeholder-name {
+            flex-grow: 1;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        #chat-header .status {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #dcf8c6; /* Light green */
+            margin-left: 10px;
+        }
+
+        /* Chat Messages Area */
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Optional background */
+            background-color: #E5DDD5; /* Ensure background color */
+            background-size: contain; /* Or adjust as needed */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Individual Message Bubbles */
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            clear: both;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            position: relative;
+            font-size: 0.95em;
+        }
+
+        .user-message { /* DC's messages */
+            background-color: #dcf8c6; /* WhatsApp green bubble */
+            margin-left: auto;
+            float: right;
+            border-top-right-radius: 0; /* Characteristic notch */
+        }
+
+        .stakeholder-message { /* Stakeholder messages */
+            background-color: #ffffff; /* White bubble */
+            margin-right: auto;
+            float: left;
+            border-top-left-radius: 0; /* Characteristic notch */
+        }
+
+        /* Input Area Styling - Hidden for static view */
+        #chat-input {
+           display: none; /* Hide input area entirely */
+        }
+
+        /* Loading dots are not needed */
+        #loading-dots { display: none; }
+
+
+        /* Utility class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Stakeholder Selection Screen -->
+    <div id="stakeholder-selection">
+        <h2>Select Stakeholder to Chat With:</h2>
+        <button onclick="startConversation('gp', 'Legal Advisor (GP)')">Legal Advisor (GP)</button>
+        <button onclick="startConversation('sp', 'Superintendent of Police (SP)')">Superintendent of Police (SP)</button>
+        <button onclick="startConversation('dio', 'District Information Officer (DIO)')">District Info Officer (DIO)</button>
+        <button onclick="startConversation('ps_itc', 'Principal Secretary (IT&C)')">Principal Secretary (IT&C)</button>
+        <!-- Add more buttons if other conversations exist -->
+    </div>
+
+    <!-- Chat Screen -->
+    <div id="chat-container" class="hidden">
+        <!-- Header -->
+        <div id="chat-header">
+            <span id="back-button" onclick="goBackToSelection()">←</span>
+            <span id="stakeholder-name">Stakeholder</span>
+            <span class="status">Offline</span> <!-- Indicate conversation ended -->
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages">
+            <!-- Chat messages appear here -->
+        </div>
+
+        <!-- Input Area - Removed from display via CSS -->
+        <!-- <div id="chat-input"> ... </div> -->
+    </div>
+
+<script>
+    // --- Conversation Data (Same as before) ---
+    const conversations = {
+        gp: [
+            // Basic Understanding
+            { sender: 'dc', text: "GP, good morning. I read the SC's Wikipedia judgment." },
+            { sender: 'dc', text: "Please simplify the main legal points for me." },
+            { sender: 'stakeholder', text: "Good morning, Sir. I can explain." },
+            { sender: 'stakeholder', text: "ANI filed a defamation case against Wikipedia content." },
+            { sender: 'dc', text: "Right. The High Court first ordered page removal?" },
+            { sender: 'stakeholder', text: "Yes, Sir. The HC said the content defamed ANI." },
+            { sender: 'stakeholder', text: "HC thought the page did not copy sources exactly." },
+            { sender: 'stakeholder', text: "HC called the sources \"opinionated articles.\"" },
+            { sender: 'stakeholder', text: "HC also said Wikipedia has a \"higher responsibility.\"" },
+            { sender: 'dc', text: "The article says HC's reasoning was problematic." },
+            { sender: 'dc', text: "It says sources were reporting, not just opinions." },
+            { sender: 'stakeholder', text: "Exactly Sir. The SC likely saw that difference." },
+            { sender: 'stakeholder', text: "More importantly, SC found the HC order too broad." },
+            { sender: 'dc', text: "Too broad? How?" },
+            { sender: 'stakeholder', text: "The HC asked Wikimedia to remove all false content." },
+            { sender: 'stakeholder', text: "This included misleading and defamatory content too." },
+            { sender: 'stakeholder', text: "The SC felt these directions were too vague." },
+            { sender: 'dc', text: "I understand. What did the SC direct ANI to do?" },
+            { sender: 'stakeholder', text: "SC told ANI to file a fresh plea in HC." },
+            { sender: 'stakeholder', text: "ANI must point out specific parts to remove." },
+            { sender: 'dc', text: "That sounds more precise and targeted." },
+            { sender: 'stakeholder', text: "Yes, Sir. It focuses on specific alleged wrongs." },
+            { sender: 'stakeholder', text: "It avoids removing the whole webpage unnecessarily." },
+             // Intermediaries & Safe Harbour
+            { sender: 'dc', text: "GP, continuing our chat. What is an \"Internet intermediary\"?" },
+            { sender: 'stakeholder', text: "Sir, an intermediary is like a middleman platform." },
+            { sender: 'stakeholder', text: "It hosts content that other people create." },
+            { sender: 'stakeholder', text: "Think of Facebook, Twitter, or Wikipedia." },
+            { sender: 'stakeholder', text: "These sites do not create most content themselves." },
+            { sender: 'stakeholder', text: "Users create and upload the content." },
+            { sender: 'dc', text: "Okay. What is \"safe harbour\" protection then?" },
+            { sender: 'stakeholder', text: "'Safe Harbour' is a legal shield for intermediaries." },
+            { sender: 'stakeholder', text: "India's IT Act Section 79 provides this shield." },
+            { sender: 'dc', text: "What does this 'Safe Harbour' shield them from?" },
+            { sender: 'stakeholder', text: "It shields them from legal blame for user content." },
+            { sender: 'stakeholder', text: "But, they must follow certain rules." },
+            { sender: 'stakeholder', text: "For example, they must remove illegal content if notified." },
+            { sender: 'stakeholder', text: "A court order is one type of notification." },
+            { sender: 'dc', text: "So, Wikipedia is not automatically responsible?" },
+            { sender: 'dc', text: "Not responsible for what volunteer editors write?" },
+            { sender: 'stakeholder', text: "Correct, Sir. Users handle content creation." },
+            { sender: 'stakeholder', text: "Users also moderate the content as volunteers." },
+            { sender: 'stakeholder', text: "Wikipedia's whole model depends on safe harbour." },
+            { sender: 'dc', text: "Did the HC's broad order threaten this protection?" },
+            { sender: 'stakeholder', text: "Yes, Sir. Removing all bad content is a huge task." },
+            { sender: 'stakeholder', text: "It makes the platform seem responsible for everything." },
+            { sender: 'stakeholder', text: "This goes against the safe harbour principle." },
+            // Defamation & Free Flow of Info
+            { sender: 'dc', text: "GP, now about 'defamation'. What is it simply?" },
+            { sender: 'stakeholder', text: "Sir, defamation means harming someone's reputation." },
+            { sender: 'stakeholder', text: "You do this by publishing a false statement." },
+            { sender: 'stakeholder', text: "The statement must be false and harmful." },
+            { sender: 'dc', text: "Is truth a defence against a defamation claim?" },
+            { sender: 'stakeholder', text: "Yes, Sir. Truth is generally a strong defence." },
+            { sender: 'dc', text: "So, Wikipedia's content might not be defamatory?" },
+            { sender: 'dc', text: "Even if critical, if based on factual reports?" },
+            { sender: 'stakeholder', text: "Correct, Sir. Factual critical reporting is different." },
+            { sender: 'stakeholder', text: "It differs from making false harmful statements." },
+            { sender: 'stakeholder', text: "The HC seemed to mix up facts and opinions." },
+            { sender: 'dc', text: "So the SC ruling supports Wikipedia's intermediary status?" },
+            { sender: 'dc', text: "And it upholds the safe harbour idea?" },
+            { sender: 'stakeholder', text: "Yes, Sir. It stresses the need for specific complaints." },
+            { sender: 'stakeholder', text: "It protects the platform's user-generated model." },
+            { sender: 'stakeholder', text: "It avoids demands for broad content removal." },
+            { sender: 'dc', text: "Does this also support 'free flow of information'?" },
+            { sender: 'stakeholder', text: "Indeed, Sir. Broad takedown orders can stop discussion." },
+            { sender: 'stakeholder', text: "The SC wants to avoid stifling information sharing." },
+            { sender: 'dc', text: "This gives a very clear legal picture. Thank you, GP." },
+            { sender: 'stakeholder', text: "My pleasure, Sir. Always ready to assist." }
+        ],
+        sp: [
+            // Enforcement Challenges
+            { sender: 'dc', text: "SP, good morning. Read the SC's Wikipedia ruling." },
+            { sender: 'dc', text: "How do we handle online content court orders locally?" },
+            { sender: 'stakeholder', text: "Morning, Sir. Our Cyber Cell usually handles these." },
+            { sender: 'stakeholder', text: "We receive such orders sometimes." },
+            { sender: 'dc', text: "Imagine we got an order like the first HC one." },
+            { sender: 'dc', text: "To remove 'all false content' from a local site." },
+            { sender: 'dc', text: "Would that be hard to enforce?" },
+            { sender: 'stakeholder', text: "Extremely hard, Sir. Defining 'false' is difficult." },
+            { sender: 'stakeholder', text: "It is subjective without specific details." },
+            { sender: 'stakeholder', text: "Enforcement needs clear legal definitions." },
+            { sender: 'dc', text: "The SC asked for specific parts to be named." },
+            { sender: 'dc', text: "Does specificity make enforcement easier for you?" },
+            { sender: 'stakeholder', text: "Much easier, Sir. Specific orders are clear." },
+            { sender: 'stakeholder', text: "E.g., \"Remove paragraph X for reason Y.\"" },
+            { sender: 'stakeholder', text: "We can clearly tell the platform what to remove." },
+            // User Anonymity & Platform Action
+            { sender: 'dc', text: "SP, Wikipedia content comes from global users." },
+            { sender: 'dc', text: "Many users are anonymous. Is finding them hard?" },
+            { sender: 'stakeholder', text: "A huge challenge, Sir. Platforms protect user privacy." },
+            { sender: 'stakeholder', text: "Finding the original writer is often impossible." },
+            { sender: 'stakeholder', text: "Especially if they are outside India." },
+            { sender: 'dc', text: "So, we usually act against the platform itself?" },
+            { sender: 'dc', text: "We ask the platform (intermediary) to remove content?" },
+            { sender: 'dc', text: "Rather than prosecuting the unknown user?" },
+            { sender: 'stakeholder', text: "Mostly yes, Sir. That is the practical step." },
+            { sender: 'stakeholder', text: "We need a valid legal order for removal." },
+            { sender: 'stakeholder', text: "We act if the user is known and in India." },
+            { sender: 'dc', text: "Wikipedia has internal rules like 'editing wars'." },
+            { sender: 'dc', text: "And 'protections'. Does this affect police work?" },
+            { sender: 'stakeholder', text: "Indirectly, Sir. Good self-regulation might reduce issues." },
+            { sender: 'stakeholder', text: "Fewer illegal content cases might reach us." },
+            { sender: 'stakeholder', text: "But we don't depend on their internal rules." },
+            { sender: 'stakeholder', text: "We follow our legal duties regardless." },
+            // Local Tensions & Balanced Approach
+            { sender: 'dc', text: "SP, what if online posts spark local tension?" },
+            { sender: 'dc', text: "Say, arguments about local issues on social media?" },
+            { sender: 'stakeholder', text: "That is a major concern, Sir. Happens often." },
+            { sender: 'stakeholder', text: "Fake news or hate posts spread very fast." },
+            { sender: 'stakeholder', text: "This can cause real-world law and order problems." },
+            { sender: 'dc', text: "How do we handle such situations? Takedowns only?" },
+            { sender: 'stakeholder', text: "We use multiple methods, Sir." },
+            { sender: 'stakeholder', text: "We monitor social media for danger signs." },
+            { sender: 'stakeholder', text: "We issue official clarifications quickly." },
+            { sender: 'stakeholder', text: "Community policing helps calm tensions." },
+            { sender: 'stakeholder', text: "We seek takedowns for clearly illegal content." },
+            { sender: 'stakeholder', text: "Content inciting violence or hatred needs removal." },
+            { sender: 'stakeholder', text: "We always follow the proper legal process." },
+            { sender: 'dc', text: "So this SC judgment supports our focus?" },
+            { sender: 'dc', text: "Focus on specific illegal content via legal routes?" },
+            { sender: 'dc', text: "Not broad monitoring or general censorship?" },
+            { sender: 'stakeholder', text: "Exactly, Sir. It supports a balanced approach." },
+            { sender: 'stakeholder', text: "Act strongly against specific illegal posts." },
+            { sender: 'stakeholder', text: "Avoid actions that stifle general discussion." },
+            { sender: 'stakeholder', text: "Avoid overburdening platforms unfairly." },
+            { sender: 'dc', text: "Good. Ensure Cyber Cell knows this well." },
+            { sender: 'dc', text: "Specificity is vital for court order requests." },
+            { sender: 'stakeholder', text: "Understood, Sir. I will brief the team." },
+            { sender: 'stakeholder', text: "We execute specific, lawful orders only." },
+            { sender: 'dc', text: "Thanks, SP. This clarity is very helpful." },
+            { sender: 'stakeholder', text: "Welcome, Sir." }
+        ],
+        dio: [
+             // Online Info Management
+            { sender: 'dc', text: "DIO, the SC's Wikipedia judgment is interesting." },
+            { sender: 'dc', text: "People clearly rely on such online sources." },
+            { sender: 'dc', text: "How accurate is our district's info on Wikipedia?" },
+            { sender: 'stakeholder', text: "Morning, Sir. It varies. Basic info might be okay." },
+            { sender: 'stakeholder', text: "But details on schemes or new projects can be old." },
+            { sender: 'stakeholder', text: "Sometimes information is missing too." },
+            { sender: 'dc', text: "The article says Wikipedia is 'community-driven'." },
+            { sender: 'dc', text: "Volunteers maintain it. Can we edit pages directly?" },
+            { sender: 'dc', text: "Can we update our district's information ourselves?" },
+            { sender: 'stakeholder', text: "Sir, Wikipedia advises against direct government edits." },
+            { sender: 'stakeholder', text: "They see it as a potential conflict of interest." },
+            { sender: 'stakeholder', text: "They want neutral information from reliable sources." },
+            { sender: 'dc', text: "So how do we correct wrong information then?" },
+            { sender: 'dc', text: "Say, about a district health scheme?" },
+            { sender: 'stakeholder', text: "We should use the 'Talk' page for that article." },
+            { sender: 'stakeholder', text: "We can post suggestions and point out errors there." },
+            { sender: 'stakeholder', text: "We must provide links to official sources." },
+            { sender: 'stakeholder', text: "Like our district website or government orders." },
+            { sender: 'dc', text: "Volunteer editors review these suggestions?" },
+            { sender: 'stakeholder', text: "Yes, Sir. Community editors check them." },
+            { sender: 'stakeholder', text: "They check against Wikipedia's rules." },
+            { sender: 'stakeholder', text: "Rules like reliable sources and neutral tone." },
+            // Wikipedia's Internal Rules & Reliability
+            { sender: 'dc', text: "DIO, the article mentions 'editing wars'. What are they?" },
+            { sender: 'stakeholder', text: "Sir, 'editing wars' occur on disputed topics." },
+            { sender: 'stakeholder', text: "Editors repeatedly change or undo edits." },
+            { sender: 'dc', text: "How does Wikipedia stop these wars?" },
+            { sender: 'stakeholder', text: "Admins can apply 'protections' to the page." },
+            { sender: 'dc', text: "What are 'extended confirmed protection' and 'full protection'?" },
+            { sender: 'stakeholder', text: "'Extended confirmed' means only experienced users edit." },
+            { sender: 'stakeholder', text: "These users have a good editing history." },
+            { sender: 'stakeholder', text: "'Full protection' limits editing only to administrators." },
+            { sender: 'stakeholder', text: "This helps maintain stability on sensitive pages." },
+            { sender: 'dc', text: "Who selects these experienced users or admins? Wikimedia?" },
+            { sender: 'stakeholder', text: "No Sir. The community elects them." },
+            { sender: 'stakeholder', text: "Election depends on past editing work and reputation." },
+            { sender: 'dc', text: "Interesting. It's a user-driven, self-regulating system." },
+            { sender: 'stakeholder', text: "It is, Sir. This model allows vast coverage." },
+            { sender: 'stakeholder', text: "Wikipedia has over 62.95 million articles now." },
+            { sender: 'stakeholder', text: "It covers over 350 languages." },
+            { sender: 'dc', text: "But article quality isn't always uniform?" },
+            { sender: 'stakeholder', text: "True Sir. Quality varies. Updates rely on volunteers." },
+            { sender: 'stakeholder', text: "But their processes ensure good reliability overall." },
+            // Information Strategy & Countering Misinformation
+            { sender: 'dc', text: "DIO, the SC ruling protects Wikipedia's model." },
+            { sender: 'dc', text: "It warns against actions that stifle discussion." },
+            { sender: 'dc', text: "How does this affect our district info strategy?" },
+            { sender: 'stakeholder', text: "Sir, it highlights our own official channels." },
+            { sender: 'stakeholder', text: "Our district website and social media are key." },
+            { sender: 'stakeholder', text: "They must be accurate, updated, and easy to find." },
+            { sender: 'dc', text: "So, we treat Wikipedia as a secondary source?" },
+            { sender: 'dc', text: "People might look there, but we point them to official sites?" },
+            { sender: 'dc', text: "This ensures they get guaranteed correct info?" },
+            { sender: 'stakeholder', text: "Exactly, Sir. We manage our official info first." },
+            { sender: 'stakeholder', text: "If major errors on Wikipedia cause public confusion..." },
+            { sender: 'stakeholder', text: "We use the 'Talk' page method to suggest fixes." },
+            { sender: 'stakeholder', text: "We must provide evidence for our suggestions." },
+            { sender: 'dc', text: "What about fighting general misinformation online?" },
+            { sender: 'dc', text: "Misinformation about our district, not just on Wikipedia?" },
+            { sender: 'stakeholder', text: "We use our official channels to clarify facts." },
+            { sender: 'stakeholder', text: "Website updates, press releases, social media posts help." },
+            { sender: 'stakeholder', text: "A 'Fact Check' section on our website is useful too." },
+            { sender: 'dc', text: "Good points. So our strategy has key steps." },
+            { sender: 'dc', text: "1. Maintain strong official channels." },
+            { sender: 'dc', text: "2. Monitor external platforms like Wikipedia." },
+            { sender: 'dc', text: "3. Use platform tools ('Talk' pages) for corrections." },
+            { sender: 'dc', text: "4. Actively debunk fake news via our channels." },
+            { sender: 'stakeholder', text: "Yes, Sir. This balances reach and control." },
+            { sender: 'stakeholder', text: "The SC case shows risks of forcing broad changes." },
+            { sender: 'stakeholder', text: "Especially on platforms with unique models like Wikipedia." },
+            { sender: 'dc', text: "Makes sense. Let's review website scheme details next week." },
+            { sender: 'stakeholder', text: "I will prepare the latest updates, Sir." },
+            { sender: 'dc', text: "Thank you, DIO." },
+            { sender: 'stakeholder', text: "Welcome, Sir." }
+        ],
+        ps_itc: [
+            // Policy View
+            { sender: 'dc', text: "Ma'am, good morning. Hope you are well." },
+            { sender: 'dc', text: "Sharing ground-level thoughts on the SC's Wikipedia ruling." },
+            { sender: 'stakeholder', text: "Morning, Collector. Please share. It is important." },
+            { sender: 'dc', text: "Ma'am, the ruling strongly supports 'safe harbour'." },
+            { sender: 'dc', text: "It helps intermediaries like online platforms." },
+            { sender: 'dc', text: "Asking for specific takedowns seems practical for us." },
+            { sender: 'stakeholder', text: "Absolutely, Collector. Safe harbour is vital." },
+            { sender: 'stakeholder', text: "IT Act's Section 79 helps digital growth." },
+            { sender: 'stakeholder', text: "Weakening it could harm innovation and free speech." },
+            { sender: 'stakeholder', text: "SC's call for specificity fits due diligence rules." },
+            { sender: 'dc', text: "The article notes Wikipedia's community model." },
+            { sender: 'dc', text: "How does state policy see such user-content platforms?" },
+            { sender: 'stakeholder', text: "Collector, policy recognizes different platform types." },
+            { sender: 'stakeholder', text: "We expect all platforms to follow Indian laws." },
+            { sender: 'stakeholder', text: "This includes the IT Rules." },
+            { sender: 'stakeholder', text: "But a single regulatory approach does not work." },
+            { sender: 'stakeholder', text: "Intermediaries host content; safe harbour protects this role." },
+            { sender: 'dc', text: "Does this ruling change advice to departments?" },
+            { sender: 'dc', text: "Advice on handling wrong online information?" },
+             // Balancing Act & State Approach
+            { sender: 'stakeholder', text: "It confirms the best practice, Collector." },
+            { sender: 'stakeholder', text: "Use official channels for correct information." },
+            { sender: 'stakeholder', text: "Issue specific corrections if needed." },
+            { sender: 'stakeholder', text: "Use legal options only for clear illegal content." },
+            { sender: 'stakeholder', text: "Like defamation suits or specific takedown orders." },
+            { sender: 'stakeholder', text: "Do not use legal tools against general criticism." },
+            { sender: 'dc', text: "The HC felt Wikipedia had 'higher responsibility'." },
+            { sender: 'dc', text: "Does the state see platforms differently?" },
+            { sender: 'dc', text: "Like an encyclopaedia versus social media?" },
+            { sender: 'stakeholder', text: "Their impact differs, but 'intermediary' status is key." },
+            { sender: 'stakeholder', text: "Safe harbour applies based on their function." },
+            { sender: 'stakeholder', text: "Their function is hosting third-party content." },
+            { sender: 'stakeholder', text: "Expecting publisher standards from platforms is complex." },
+            { sender: 'stakeholder', text: "The SC decision highlights this complexity." },
+            { sender: 'dc', text: "Article warns against stifling open discussion." },
+            { sender: 'dc', text: "How do we balance preventing online harm..." },
+            { sender: 'dc', text: "...with protecting free flow of information?" },
+            { sender: 'stakeholder', text: "That is the main challenge, Collector." },
+            { sender: 'stakeholder', text: "We need a measured approach." },
+            { sender: 'stakeholder', text: "Strong official communication is first." },
+            { sender: 'stakeholder', text: "Media literacy education helps citizens." },
+            { sender: 'stakeholder', text: "Platforms need good grievance systems (per IT Rules)." },
+            { sender: 'stakeholder', text: "Legal action is the last step for specific harm." },
+            { sender: 'stakeholder', text: "Not a tool to silence critics." },
+            { sender: 'dc', text: "So, platforms need systems (like Wikipedia's rules)?" },
+            { sender: 'dc', text: "And government acts legally for specific harms?" },
+            { sender: 'stakeholder', text: "Precisely. Government sets the legal framework." },
+            { sender: 'stakeholder', text: "Platforms must exercise due diligence." },
+            { sender: 'stakeholder', text: "Judiciary applies laws in specific cases." },
+            { sender: 'stakeholder', text: "SC corrected the HC's perceived overreach here." },
+            { sender: 'dc', text: "Understood, Ma'am. This aligns our district actions." },
+            { sender: 'dc', text: "It helps us follow the broader policy view." },
+            { sender: 'stakeholder', text: "Good. Ensure your DIO and Cyber Cell know this." },
+            { sender: 'stakeholder', text: "Specificity and proportion matter in online cases." },
+            { sender: 'dc', text: "I will ensure they understand, Ma'am. Thank you." },
+            { sender: 'stakeholder', text: "Welcome, Collector. Keep up the good work." }
+        ]
+        // Add other stakeholder conversations here following the same structure
+    };
+
+    // --- DOM References ---
+    const stakeholderSelectionDiv = document.getElementById('stakeholder-selection');
+    const chatContainerDiv = document.getElementById('chat-container');
+    const chatHeaderName = document.getElementById('stakeholder-name');
+    const chatMessagesDiv = document.getElementById('chat-messages');
+    // Input elements are not needed for display logic but might exist in HTML
+    // const messageInput = document.getElementById('message-input');
+    // const sendButton = document.getElementById('send-button');
+
+    // --- Functions ---
+
+    /** Scrolls the chat messages div to the bottom smoothly */
+    function scrollToBottom() {
+        // Use requestAnimationFrame for smoother scrolling after DOM updates
+        requestAnimationFrame(() => {
+             chatMessagesDiv.scrollTo({ top: chatMessagesDiv.scrollHeight, behavior: 'auto' }); // 'auto' for instant scroll
+        });
+    }
+
+    /** Displays a message in the chat window */
+    function displayMessage(sender, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(sender === 'dc' ? 'user-message' : 'stakeholder-message');
+        // Replace newlines with <br> for display, sanitize basic HTML
+        const sanitizedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>');
+        messageDiv.innerHTML = sanitizedText;
+        chatMessagesDiv.appendChild(messageDiv);
+        // No need to scroll individually here, scroll after all messages are added
+    }
+
+    /** Displays the entire conversation history at once */
+    function displayFullConversation(conversationData) {
+        chatMessagesDiv.innerHTML = ''; // Clear previous messages first
+
+        if (!conversationData || conversationData.length === 0) {
+            // Display a message if conversation is empty or invalid
+            const emptyMsgDiv = document.createElement('div');
+            emptyMsgDiv.textContent = "No conversation history available.";
+            emptyMsgDiv.style.padding = '15px';
+            emptyMsgDiv.style.textAlign = 'center';
+            emptyMsgDiv.style.color = '#666';
+            chatMessagesDiv.appendChild(emptyMsgDiv);
+            return;
+        }
+
+        // Loop through all messages and display them
+        conversationData.forEach(message => {
+            displayMessage(message.sender, message.text);
+        });
+
+        // Scroll to the bottom after all messages are added
+        scrollToBottom();
+    }
+
+
+    /** Starts displaying a specific conversation history */
+    function startConversation(stakeholderKey, stakeholderName) {
+        const conversationData = conversations[stakeholderKey];
+        if (!conversationData) {
+            console.error("Conversation data not found for key:", stakeholderKey);
+            alert("Error: Could not load conversation history.");
+            return;
+        }
+
+        // Update UI elements
+        stakeholderSelectionDiv.classList.add('hidden');
+        chatContainerDiv.classList.remove('hidden');
+        chatHeaderName.textContent = stakeholderName;
+        // Change status to Offline or indicate it's history
+        chatContainerDiv.querySelector('#chat-header .status').textContent = 'Offline';
+
+        // Display the full conversation immediately
+        displayFullConversation(conversationData);
+
+    }
+
+    /** Navigates back to the stakeholder selection screen */
+    function goBackToSelection() {
+        chatContainerDiv.classList.add('hidden');
+        stakeholderSelectionDiv.classList.remove('hidden');
+        // No need to reset state variables like index as they are not used here
+    }
+
+    // --- Initial Setup ---
+    // Chat container hidden by default via CSS classes
+
+</script>
+
+</body>
+</html>
