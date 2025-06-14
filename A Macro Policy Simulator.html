@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance the Economy: A Macro Policy Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            transition: background 1s ease;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            height: 12px;
+            border-radius: 10px;
+            background: #d7dcec;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #4263eb;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(66, 99, 235, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .slider.active {
+            box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.3);
+        }
+        
+        .slider.active::-webkit-slider-thumb {
+            box-shadow: 0 0 0 6px rgba(66, 99, 235, 0.3), 0 2px 6px rgba(66, 99, 235, 0.5);
+        }
+        
+        .meter {
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            z-index: 100;
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: confetti-fall 3s ease-in-out forwards;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .icon-container {
+            position: relative;
+            height: 40px;
+            overflow: hidden;
+        }
+        
+        .icon {
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+        
+        .ship {
+            position: relative;
+            width: 100%;
+            height: 40px;
+        }
+        
+        .ship-icon {
+            position: absolute;
+            transition: transform 1s ease;
+        }
+        
+        .export-box, .import-box {
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 md:p-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-center">Can You Balance the Nation?</h1>
+            <p class="text-lg md:text-xl text-center mt-2 text-blue-100">Slide the policy levers and watch how Jobs and BoP respond.</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6 md:p-8" id="simulator-container">
+            <!-- Sliders Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Expansionary Monetary Policy -->
+                <div class="bg-blue-50 p-5 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg text-blue-800">Expansionary Monetary Policy</h3>
+                        <span class="text-blue-600 font-medium" id="exp-monetary-value">0%</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Lower Interest Rates</p>
+                    <input type="range" min="0" max="100" value="0" class="slider w-full" id="exp-monetary">
+                </div>
+                
+                <!-- Expansionary Fiscal Policy -->
+                <div class="bg-green-50 p-5 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg text-green-800">Expansionary Fiscal Policy</h3>
+                        <span class="text-green-600 font-medium" id="exp-fiscal-value">0%</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Lower Taxes + More Govt Spending</p>
+                    <input type="range" min="0" max="100" value="0" class="slider w-full" id="exp-fiscal">
+                </div>
+                
+                <!-- Contractionary Monetary Policy -->
+                <div class="bg-purple-50 p-5 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg text-purple-800">Contractionary Monetary Policy</h3>
+                        <span class="text-purple-600 font-medium" id="con-monetary-value">0%</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Raise Interest Rates</p>
+                    <input type="range" min="0" max="100" value="0" class="slider w-full" id="con-monetary">
+                </div>
+                
+                <!-- Contractionary Fiscal Policy -->
+                <div class="bg-orange-50 p-5 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg text-orange-800">Contractionary Fiscal Policy</h3>
+                        <span class="text-orange-600 font-medium" id="con-fiscal-value">0%</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Raise Taxes + Cut Govt Spending</p>
+                    <input type="range" min="0" max="100" value="0" class="slider w-full" id="con-fiscal">
+                </div>
+            </div>
+            
+            <!-- Scoreboard Section -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-sm mb-6" id="scoreboard">
+                <h2 class="text-2xl font-bold text-center mb-6">Economic Indicators</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Jobs Meter -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-semibold text-lg">Jobs</h3>
+                            <span class="font-medium" id="jobs-value">50%</span>
+                        </div>
+                        <div class="meter bg-gray-200 mb-2">
+                            <div class="meter-fill bg-yellow-400" id="jobs-meter" style="width: 50%"></div>
+                        </div>
+                        <div class="icon-container mt-3">
+                            <span class="icon text-2xl">👷‍♂️</span>
+                            <span class="icon text-2xl">🏭</span>
+                            <span class="icon text-2xl">💼</span>
+                            <span class="icon text-2xl">👩‍💼</span>
+                            <span class="icon text-2xl">👨‍💻</span>
+                        </div>
+                    </div>
+                    
+                    <!-- BoP Meter -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-semibold text-lg">Balance of Payments</h3>
+                            <span class="font-medium" id="bop-value">50%</span>
+                        </div>
+                        <div class="meter bg-gray-200 mb-2">
+                            <div class="meter-fill bg-yellow-400" id="bop-meter" style="width: 50%"></div>
+                        </div>
+                        <div class="ship mt-3">
+                            <span class="ship-icon text-2xl" style="left: 45%;">⚓</span>
+                            <span class="export-box text-xl" style="left: 30%;">📦</span>
+                            <span class="import-box text-xl" style="left: 60%;">📥</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Overall Status -->
+                <div class="mt-8 p-4 rounded-lg bg-yellow-100 text-center" id="status-message">
+                    <p class="font-medium text-lg">Your economy is in moderate health. Keep adjusting!</p>
+                </div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="bg-indigo-50 p-5 rounded-xl">
+                <h3 class="font-semibold text-lg mb-3">How It Works</h3>
+                <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700">
+                    <li><span class="font-medium">Expansionary Monetary Policy:</span> Lowers interest rates, increases money supply, boosts investments and jobs, but may slightly weaken BoP.</li>
+                    <li><span class="font-medium">Expansionary Fiscal Policy:</span> Lowers taxes and increases government spending, boosts consumption and jobs, but increases imports and weakens BoP.</li>
+                    <li><span class="font-medium">Contractionary Monetary Policy:</span> Raises interest rates, reduces borrowing and investment, decreases jobs, but may improve BoP.</li>
+                    <li><span class="font-medium">Contractionary Fiscal Policy:</span> Raises taxes and cuts government spending, reduces consumption and jobs, but decreases imports and improves BoP.</li>
+                </ul>
+                <p class="mt-4 text-sm text-gray-700"><span class="font-medium">Goal:</span> Try to get both Jobs and BoP into the green zone (70-100%)!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <p class="font-medium" id="notification-text"></p>
+    </div>
+
+    <script>
+        // DOM Elements
+        const expMonetary = document.getElementById('exp-monetary');
+        const expFiscal = document.getElementById('exp-fiscal');
+        const conMonetary = document.getElementById('con-monetary');
+        const conFiscal = document.getElementById('con-fiscal');
+        
+        const expMonetaryValue = document.getElementById('exp-monetary-value');
+        const expFiscalValue = document.getElementById('exp-fiscal-value');
+        const conMonetaryValue = document.getElementById('con-monetary-value');
+        const conFiscalValue = document.getElementById('con-fiscal-value');
+        
+        const jobsMeter = document.getElementById('jobs-meter');
+        const bopMeter = document.getElementById('bop-meter');
+        const jobsValue = document.getElementById('jobs-value');
+        const bopValue = document.getElementById('bop-value');
+        
+        const statusMessage = document.getElementById('status-message');
+        const scoreboard = document.getElementById('scoreboard');
+        const simulatorContainer = document.getElementById('simulator-container');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        
+        // Initial state
+        let jobs = 50;
+        let bop = 50;
+        let lastNotificationTime = 0;
+        let confettiShown = false;
+        
+        // Icons setup
+        const icons = document.querySelectorAll('.icon');
+        updateIcons();
+        
+        const shipIcon = document.querySelector('.ship-icon');
+        const exportBox = document.querySelector('.export-box');
+        const importBox = document.querySelector('.import-box');
+        updateShip();
+        
+        // Event listeners for sliders
+        const sliders = [expMonetary, expFiscal, conMonetary, conFiscal];
+        
+        sliders.forEach(slider => {
+            slider.addEventListener('input', () => {
+                updateValues();
+                slider.classList.add('active');
+                
+                // Show notification based on which slider is moved
+                const currentTime = new Date().getTime();
+                if (currentTime - lastNotificationTime > 2000) {
+                    lastNotificationTime = currentTime;
+                    
+                    let message = '';
+                    if (slider === expMonetary) {
+                        message = "Interest rates are dropping! Businesses are taking loans, jobs are rising.";
+                    } else if (slider === expFiscal) {
+                        message = "Govt spending increases... Imports rise too. BoP is weakening.";
+                    } else if (slider === conMonetary) {
+                        message = "Interest rates are rising! Borrowing becomes expensive, jobs may decrease.";
+                    } else if (slider === conFiscal) {
+                        message = "Taxes rising and spending cuts... Less consumption but BoP improving.";
+                    }
+                    
+                    showNotification(message);
+                }
+            });
+            
+            slider.addEventListener('change', () => {
+                slider.classList.remove('active');
+            });
+        });
+        
+        // Update display values
+        function updateValues() {
+            // Update slider value displays
+            expMonetaryValue.textContent = `${expMonetary.value}%`;
+            expFiscalValue.textContent = `${expFiscal.value}%`;
+            conMonetaryValue.textContent = `${conMonetary.value}%`;
+            conFiscalValue.textContent = `${conFiscal.value}%`;
+            
+            // Calculate economic indicators based on policy settings
+            calculateEconomy();
+            
+            // Update meters
+            updateMeters();
+            
+            // Update status message
+            updateStatus();
+            
+            // Update animations
+            updateIcons();
+            updateShip();
+        }
+        
+        // Calculate economic indicators based on policy settings
+        function calculateEconomy() {
+            // Get slider values
+            const expM = parseInt(expMonetary.value);
+            const expF = parseInt(expFiscal.value);
+            const conM = parseInt(conMonetary.value);
+            const conF = parseInt(conFiscal.value);
+            
+            // Calculate Jobs (0-100 scale)
+            // Expansionary policies increase jobs, contractionary decrease
+            jobs = 50 + (expM * 0.3) + (expF * 0.4) - (conM * 0.3) - (conF * 0.4);
+            
+            // Calculate BoP (0-100 scale)
+            // Expansionary fiscal hurts BoP significantly, expansionary monetary slightly
+            // Contractionary policies improve BoP
+            bop = 50 - (expM * 0.1) - (expF * 0.4) + (conM * 0.2) + (conF * 0.5);
+            
+            // Ensure values stay within 0-100 range
+            jobs = Math.max(0, Math.min(100, jobs));
+            bop = Math.max(0, Math.min(100, bop));
+        }
+        
+        // Update meters with current values
+        function updateMeters() {
+            // Update meter fill widths
+            jobsMeter.style.width = `${jobs}%`;
+            bopMeter.style.width = `${bop}%`;
+            
+            // Update value displays
+            jobsValue.textContent = `${Math.round(jobs)}%`;
+            bopValue.textContent = `${Math.round(bop)}%`;
+            
+            // Update meter colors based on values
+            if (jobs >= 70) {
+                jobsMeter.className = 'meter-fill bg-green-500';
+            } else if (jobs >= 30) {
+                jobsMeter.className = 'meter-fill bg-yellow-400';
+            } else {
+                jobsMeter.className = 'meter-fill bg-red-500';
+            }
+            
+            if (bop >= 70) {
+                bopMeter.className = 'meter-fill bg-green-500';
+            } else if (bop >= 30) {
+                bopMeter.className = 'meter-fill bg-yellow-400';
+            } else {
+                bopMeter.className = 'meter-fill bg-red-500';
+            }
+        }
+        
+        // Update status message and background
+        function updateStatus() {
+            let message = '';
+            let bgColor = '';
+            
+            if (jobs >= 70 && bop >= 70) {
+                message = '<span class="font-bold text-green-700">Balanced like a Pro!</span> Perfect economic harmony achieved!';
+                bgColor = 'bg-green-100';
+                
+                // Show confetti if both are in green zone and confetti hasn't been shown yet
+                if (!confettiShown) {
+                    createConfetti();
+                    confettiShown = true;
+                }
+            } else if (jobs < 30 && bop < 30) {
+                message = '<span class="font-bold text-red-700">Oops! Policy Imbalance Detected!</span> Both jobs and trade are suffering.';
+                bgColor = 'bg-red-100';
+                confettiShown = false;
+            } else if (jobs >= 70) {
+                message = 'Strong job market, but watch your balance of payments!';
+                bgColor = 'bg-yellow-100';
+                confettiShown = false;
+            } else if (bop >= 70) {
+                message = 'Healthy trade balance, but more jobs needed!';
+                bgColor = 'bg-yellow-100';
+                confettiShown = false;
+            } else {
+                message = 'Your economy is in moderate health. Keep adjusting!';
+                bgColor = 'bg-yellow-100';
+                confettiShown = false;
+            }
+            
+            statusMessage.innerHTML = `<p class="font-medium text-lg">${message}</p>`;
+            statusMessage.className = `mt-8 p-4 rounded-lg ${bgColor} text-center`;
+            
+            // Update overall background color based on economic health
+            if (jobs >= 70 && bop >= 70) {
+                scoreboard.className = 'bg-green-50 p-6 rounded-xl shadow-sm mb-6';
+            } else if (jobs < 30 && bop < 30) {
+                scoreboard.className = 'bg-red-50 p-6 rounded-xl shadow-sm mb-6';
+            } else {
+                scoreboard.className = 'bg-gray-50 p-6 rounded-xl shadow-sm mb-6';
+            }
+        }
+        
+        // Update job icons animation
+        function updateIcons() {
+            const iconCount = Math.ceil(jobs / 20); // 1-5 icons based on jobs value
+            
+            icons.forEach((icon, index) => {
+                if (index < iconCount) {
+                    // Show icon with animation
+                    icon.style.opacity = '1';
+                    icon.style.transform = 'translateY(0)';
+                    icon.style.left = `${index * 20}%`;
+                } else {
+                    // Hide icon
+                    icon.style.opacity = '0';
+                    icon.style.transform = 'translateY(20px)';
+                }
+            });
+        }
+        
+        // Update ship and trade boxes animation
+        function updateShip() {
+            // Ship tilts based on BoP (centered at 50%)
+            const tilt = (bop - 50) / 5; // -10 to +10 degrees
+            shipIcon.style.transform = `rotate(${tilt}deg)`;
+            
+            // Position export/import boxes to show balance
+            const exportPosition = 40 - (bop - 50) / 2.5; // Move left as BoP improves
+            const importPosition = 60 + (bop - 50) / 2.5; // Move right as BoP improves
+            
+            exportBox.style.left = `${exportPosition}%`;
+            importBox.style.left = `${importPosition}%`;
+            
+            // Scale boxes based on BoP
+            const exportScale = 0.8 + (bop / 100) * 0.4;
+            const importScale = 1.2 - (bop / 100) * 0.4;
+            
+            exportBox.style.transform = `scale(${exportScale})`;
+            importBox.style.transform = `scale(${importScale})`;
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Initialize the simulator
+        updateValues();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94f93d5375daa908',t:'MTc0OTg5Nzk0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
