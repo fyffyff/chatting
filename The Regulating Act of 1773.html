@@ -1,0 +1,1144 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Company Rule Simulation (1773–1858)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Playfair+Display:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            overflow-x: hidden;
+            background-color: #f8f3e9;
+        }
+        
+        .fell-font {
+            font-family: 'IM Fell English', serif;
+        }
+        
+        .parchment {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.2 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='%23f5edd6'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            box-shadow: inset 0 0 20px rgba(139, 69, 19, 0.2);
+        }
+        
+        .map-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.2 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='%23f5edd6'/%3E%3Cpath d='M200,150 C250,120 300,180 350,150 C400,120 450,160 500,140 C550,120 600,150 650,130' stroke='%23a87c4f' fill='none' stroke-width='2' stroke-dasharray='5,5'/%3E%3Cpath d='M150,250 C200,220 250,280 300,250 C350,220 400,260 450,240 C500,220 550,250 600,230' stroke='%23a87c4f' fill='none' stroke-width='2' stroke-dasharray='5,5'/%3E%3Ccircle cx='300' cy='200' r='20' fill='%23d4b483' stroke='%23a87c4f' stroke-width='2'/%3E%3Ccircle cx='450' cy='300' r='25' fill='%23d4b483' stroke='%23a87c4f' stroke-width='2'/%3E%3Ccircle cx='550' cy='180' r='15' fill='%23d4b483' stroke='%23a87c4f' stroke-width='2'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .btn-primary {
+            background-color: #8b4513;
+            color: #f5edd6;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: #6b3100;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .scroll {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='50' viewBox='0 0 200 50'%3E%3Cpath d='M0,10 Q20,0 40,10 Q60,20 80,10 Q100,0 120,10 Q140,20 160,10 Q180,0 200,10 L200,40 Q180,30 160,40 Q140,50 120,40 Q100,30 80,40 Q60,50 40,40 Q20,30 0,40 Z' fill='%23f5edd6' stroke='%23a87c4f' stroke-width='1'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-size: 200px 50px;
+        }
+        
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .task-item.completed {
+            opacity: 0.7;
+        }
+        
+        .task-item.active {
+            border-color: #8b4513 !important;
+            box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.3);
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 10px;
+            background: #d3d3d3;
+            outline: none;
+            border-radius: 5px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #8b4513;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .draggable {
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+        
+        .draggable:active {
+            cursor: grabbing;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #a87c4f;
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone.active {
+            background-color: rgba(168, 124, 79, 0.2);
+        }
+        
+        .seal {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #8b4513;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f5edd6;
+            font-weight: bold;
+            transform: rotate(-15deg);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
+        }
+        
+        .certificate {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.1 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='%23f9f5eb'/%3E%3C/svg%3E");
+            border: 10px double #8b4513;
+        }
+        
+        .timeline {
+            height: 8px;
+            background-color: #d4b483;
+            border-radius: 4px;
+        }
+        
+        .timeline-marker {
+            width: 16px;
+            height: 16px;
+            background-color: #8b4513;
+            border-radius: 50%;
+            position: absolute;
+            top: -4px;
+            transform: translateX(-50%);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Entry Screen -->
+    <div id="entry-screen" class="min-h-screen parchment flex flex-col items-center justify-center p-4">
+        <div class="map-bg w-full max-w-4xl rounded-lg p-8 relative">
+            <div class="text-center mb-8">
+                <h1 class="fell-font text-4xl md:text-6xl text-[#8b4513] mb-2">The Regulating Act of 1773</h1>
+                <h2 class="text-xl md:text-2xl text-[#a87c4f]">Shape the Future of the Company!</h2>
+            </div>
+            
+            <div class="bg-[#f5edd6]/80 backdrop-blur-sm rounded-lg p-6 max-w-2xl mx-auto shadow-lg border border-[#a87c4f]">
+                <p class="mb-4 text-[#5c3b1c]">Step into the shoes of British Parliament as you implement the historic Regulating Act of 1773, transforming the East India Company from a mere trading entity into a governing body in India.</p>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <p class="text-sm text-[#8b4513]"><strong>Time Period:</strong> 1773-1858</p>
+                        <p class="text-sm text-[#8b4513]"><strong>Location:</strong> British India</p>
+                    </div>
+                    <div class="seal">
+                        <span class="text-xs">OFFICIAL<br>SEAL</span>
+                    </div>
+                </div>
+                
+                <button id="begin-btn" class="btn-primary w-full py-3 px-6 rounded-md text-lg font-bold mt-4 flex items-center justify-center">
+                    <span>Begin Governance</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center text-[#8b4513] text-sm">
+                <p>Perfect for UPSC aspirants and history enthusiasts</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Simulation Screen -->
+    <div id="simulation-screen" class="hidden min-h-screen parchment">
+        <!-- Header -->
+        <header class="bg-[#8b4513] text-[#f5edd6] p-4 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="fell-font text-xl md:text-2xl">The Regulating Act of 1773</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:block">
+                        <div class="relative w-64 h-8">
+                            <div class="timeline absolute w-full"></div>
+                            <div class="timeline-marker" style="left: 0%;" title="1773"></div>
+                            <div class="timeline-marker" style="left: 25%;" title="1793"></div>
+                            <div class="timeline-marker" style="left: 50%;" title="1813"></div>
+                            <div class="timeline-marker" style="left: 75%;" title="1833"></div>
+                            <div class="timeline-marker" style="left: 100%;" title="1858"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span>1773</span>
+                            <span>1858</span>
+                        </div>
+                    </div>
+                    <button id="help-btn" class="p-2 rounded-full hover:bg-[#6b3100]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container mx-auto p-4">
+            <!-- Progress Tracker -->
+            <div class="mb-8">
+                <div class="bg-[#f5edd6] rounded-lg shadow-md p-4 border border-[#a87c4f]">
+                    <h2 class="fell-font text-xl text-[#8b4513] mb-2">Your Progress</h2>
+                    <div class="w-full bg-[#d4b483]/30 rounded-full h-4">
+                        <div id="progress-bar" class="bg-[#8b4513] h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-[#8b4513] mt-1">
+                        <span>Start</span>
+                        <span>Complete</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Container -->
+            <div id="task-container" class="mb-8">
+                <!-- Task 1 -->
+                <div id="task-1" class="task-item bg-[#f5edd6] rounded-lg shadow-md p-6 border-2 border-[#d4b483] mb-4 active">
+                    <h3 class="fell-font text-2xl text-[#8b4513] mb-4">Task 1: Control Company's Affairs</h3>
+                    <p class="text-[#5c3b1c] mb-6">The East India Company has grown beyond a mere trading entity. It's time for the British Parliament to establish control over its operations in India.</p>
+                    
+                    <div class="flex justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 200 200" class="opacity-80">
+                            <rect x="50" y="40" width="100" height="120" fill="#d4b483" stroke="#8b4513" stroke-width="3"/>
+                            <rect x="60" y="50" width="80" height="20" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                            <rect x="60" y="80" width="80" height="20" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                            <rect x="60" y="110" width="80" height="20" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                            <path d="M50,40 L70,20 L170,20 L150,40 Z" fill="#d4b483" stroke="#8b4513" stroke-width="3"/>
+                            <path d="M150,40 L170,20 L170,140 L150,160 Z" fill="#c19a6b" stroke="#8b4513" stroke-width="3"/>
+                            <text x="100" y="65" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="10">EAST INDIA</text>
+                            <text x="100" y="95" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="10">COMPANY</text>
+                            <text x="100" y="125" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="10">LEDGER</text>
+                        </svg>
+                    </div>
+                    
+                    <button id="task-1-btn" class="btn-primary w-full py-3 px-6 rounded-md text-lg font-bold">
+                        Control the Company's Affairs
+                    </button>
+                </div>
+
+                <!-- Task 2 -->
+                <div id="task-2" class="task-item bg-[#f5edd6] rounded-lg shadow-md p-6 border-2 border-[#d4b483] mb-4 opacity-50">
+                    <h3 class="fell-font text-2xl text-[#8b4513] mb-4">Task 2: Recognize Political-Administrative Role</h3>
+                    <p class="text-[#5c3b1c] mb-6">Acknowledge the Company's transformation from a commercial entity to a political and administrative power in India.</p>
+                    
+                    <div class="flex justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 200 200" class="opacity-80">
+                            <circle cx="100" cy="100" r="60" fill="#d4b483" stroke="#8b4513" stroke-width="3"/>
+                            <path d="M100,40 L115,85 H170 L125,115 L140,170 L100,140 L60,170 L75,115 L30,85 H85 Z" fill="#f5edd6" stroke="#8b4513" stroke-width="2"/>
+                            <circle cx="100" cy="100" r="20" fill="#8b4513"/>
+                            <text x="100" y="105" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="12">EIC</text>
+                        </svg>
+                    </div>
+                    
+                    <button id="task-2-btn" class="btn-primary w-full py-3 px-6 rounded-md text-lg font-bold opacity-50" disabled>
+                        Acknowledge Company's Political Power
+                    </button>
+                </div>
+
+                <!-- Task 3 -->
+                <div id="task-3" class="task-item bg-[#f5edd6] rounded-lg shadow-md p-6 border-2 border-[#d4b483] mb-4 opacity-50">
+                    <h3 class="fell-font text-2xl text-[#8b4513] mb-4">Task 3: Lay the Foundation of Central Administration</h3>
+                    <p class="text-[#5c3b1c] mb-6">Establish a centralized administrative structure to govern the Company's territories in India.</p>
+                    
+                    <div id="subtasks-container" class="space-y-4 hidden">
+                        <!-- Subtasks will be dynamically shown here -->
+                    </div>
+                    
+                    <button id="task-3-btn" class="btn-primary w-full py-3 px-6 rounded-md text-lg font-bold opacity-50" disabled>
+                        Begin Central Administration Setup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="message-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-[#f5edd6] rounded-lg shadow-xl p-6 max-w-md w-full mx-4 border-2 border-[#8b4513]">
+            <h3 id="modal-title" class="fell-font text-2xl text-[#8b4513] mb-2"></h3>
+            <p id="modal-message" class="text-[#5c3b1c] mb-4"></p>
+            <button id="modal-close" class="btn-primary w-full py-2 px-4 rounded-md">Continue</button>
+        </div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div id="completion-screen" class="hidden min-h-screen parchment flex flex-col items-center justify-center p-4">
+        <div class="certificate max-w-4xl w-full rounded-lg p-8 relative">
+            <div class="text-center mb-8">
+                <h1 class="fell-font text-4xl md:text-5xl text-[#8b4513] mb-2">Certificate of Achievement</h1>
+                <h2 class="text-xl text-[#a87c4f]">The Regulating Act of 1773</h2>
+            </div>
+            
+            <div class="text-center mb-8">
+                <p class="text-lg text-[#5c3b1c]">This certifies that you have successfully enacted</p>
+                <p class="fell-font text-3xl text-[#8b4513] my-2">The Regulating Act of 1773</p>
+                <p class="text-lg text-[#5c3b1c]">establishing British Parliamentary control over the East India Company</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f] text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-[#8b4513]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="fell-font text-lg text-[#8b4513]">Governor-General Installed</h3>
+                </div>
+                <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f] text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-[#8b4513]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="fell-font text-lg text-[#8b4513]">Centralised Control Established</h3>
+                </div>
+                <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f] text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-[#8b4513]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="fell-font text-lg text-[#8b4513]">Judiciary Introduced</h3>
+                </div>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button id="replay-btn" class="btn-primary py-2 px-6 rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                    Replay
+                </button>
+                <button id="next-act-btn" class="btn-primary py-2 px-6 rounded-md">
+                    Next Act: Pitt's India Act 1784
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="absolute bottom-8 right-8">
+                <div class="seal">
+                    <span class="text-xs">OFFICIAL<br>SEAL</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const entryScreen = document.getElementById('entry-screen');
+            const simulationScreen = document.getElementById('simulation-screen');
+            const completionScreen = document.getElementById('completion-screen');
+            const beginBtn = document.getElementById('begin-btn');
+            const task1 = document.getElementById('task-1');
+            const task2 = document.getElementById('task-2');
+            const task3 = document.getElementById('task-3');
+            const task1Btn = document.getElementById('task-1-btn');
+            const task2Btn = document.getElementById('task-2-btn');
+            const task3Btn = document.getElementById('task-3-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const messageModal = document.getElementById('message-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalClose = document.getElementById('modal-close');
+            const subtasksContainer = document.getElementById('subtasks-container');
+            const replayBtn = document.getElementById('replay-btn');
+            const nextActBtn = document.getElementById('next-act-btn');
+            
+            // State
+            let currentProgress = 0;
+            let currentTask = 1;
+            let currentSubtask = 0;
+            const totalTasks = 3;
+            const totalSubtasks = 6;
+            
+            // Subtasks data
+            const subtasks = [
+                {
+                    title: "Promote Governor of Bengal",
+                    description: "Elevate the Governor of Bengal to Governor-General of Bengal, establishing central authority.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Promote Governor of Bengal</h4>
+                            <p class="text-[#5c3b1c] mb-4">Slide to promote the Governor of Bengal to Governor-General of Bengal.</p>
+                            
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="text-right mr-4 text-[#8b4513]">
+                                    <p>Governor<br>of Bengal</p>
+                                </div>
+                                <input type="range" min="0" max="100" value="0" class="slider w-40" id="promotion-slider">
+                                <div class="text-left ml-4 text-[#8b4513]">
+                                    <p>Governor-General<br>of Bengal</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-center">
+                                <div class="relative">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <circle cx="50" cy="35" r="15" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                        <rect x="35" y="50" width="30" height="30" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                    </svg>
+                                    <div id="governor-title" class="text-center mt-2 text-[#8b4513] font-bold">Governor</div>
+                                </div>
+                            </div>
+                            
+                            <button id="subtask-1-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-4 opacity-50" disabled>
+                                Complete Promotion
+                            </button>
+                        </div>
+                    `
+                },
+                {
+                    title: "Add Executive Council",
+                    description: "Form an Executive Council of 4 Members to assist the Governor-General.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Add Executive Council</h4>
+                            <p class="text-[#5c3b1c] mb-4">Click to add 4 Members to the Executive Council.</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div id="council-slot-1" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                    <span class="text-[#a87c4f]">Click to add</span>
+                                </div>
+                                <div id="council-slot-2" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                    <span class="text-[#a87c4f]">Click to add</span>
+                                </div>
+                                <div id="council-slot-3" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                    <span class="text-[#a87c4f]">Click to add</span>
+                                </div>
+                                <div id="council-slot-4" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                    <span class="text-[#a87c4f]">Click to add</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <p id="council-count" class="text-[#8b4513]">0 of 4 Council Members added</p>
+                            </div>
+                            
+                            <button id="subtask-2-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-2 opacity-50" disabled>
+                                Confirm Executive Council
+                            </button>
+                        </div>
+                    `
+                },
+                {
+                    title: "Subordinate Bombay & Madras",
+                    description: "Place the Bombay and Madras Presidencies under the authority of the Governor-General of Bengal.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Subordinate Bombay & Madras</h4>
+                            <p class="text-[#5c3b1c] mb-4">Drag and drop the Bombay and Madras Governors under the Governor-General's authority.</p>
+                            
+                            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                                <div class="w-full md:w-1/2">
+                                    <h5 class="text-center text-[#8b4513] mb-2">Presidencies</h5>
+                                    <div class="space-y-4">
+                                        <div id="bombay-governor" class="draggable bg-[#f5edd6] p-3 rounded-lg border border-[#a87c4f] text-center cursor-grab" draggable="true">
+                                            <div class="flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" class="mr-2">
+                                                    <circle cx="50" cy="30" r="20" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                                    <rect x="30" y="50" width="40" height="40" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                                </svg>
+                                                <div class="text-left">
+                                                    <p class="font-bold text-[#8b4513]">Governor of Bombay</p>
+                                                    <p class="text-sm text-[#5c3b1c]">Western India</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="madras-governor" class="draggable bg-[#f5edd6] p-3 rounded-lg border border-[#a87c4f] text-center cursor-grab" draggable="true">
+                                            <div class="flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" class="mr-2">
+                                                    <circle cx="50" cy="30" r="20" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                                    <rect x="30" y="50" width="40" height="40" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                                </svg>
+                                                <div class="text-left">
+                                                    <p class="font-bold text-[#8b4513]">Governor of Madras</p>
+                                                    <p class="text-sm text-[#5c3b1c]">Southern India</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-1/2">
+                                    <h5 class="text-center text-[#8b4513] mb-2">Under Governor-General</h5>
+                                    <div id="governor-general-authority" class="drop-zone h-40 flex flex-col items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 100 100" class="mb-2">
+                                            <circle cx="50" cy="25" r="20" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                            <rect x="25" y="45" width="50" height="50" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                            <text x="50" y="75" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="12">GOVERNOR</text>
+                                            <text x="50" y="90" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="12">GENERAL</text>
+                                        </svg>
+                                        <p class="text-[#a87c4f]">Drop governors here</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <p id="subordination-count" class="text-[#8b4513]">0 of 2 Governors subordinated</p>
+                            </div>
+                            
+                            <button id="subtask-3-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-2 opacity-50" disabled>
+                                Confirm Subordination
+                            </button>
+                        </div>
+                    `
+                },
+                {
+                    title: "Establish Supreme Court at Calcutta",
+                    description: "Set up the Supreme Court at Calcutta with a Chief Justice and three other judges.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Establish Supreme Court at Calcutta</h4>
+                            <p class="text-[#5c3b1c] mb-4">First establish the court, then appoint the Chief Justice and three judges.</p>
+                            
+                            <div id="court-establishment" class="mb-4">
+                                <button id="establish-court-btn" class="btn-primary w-full py-2 px-4 rounded-md">
+                                    Establish Supreme Court
+                                </button>
+                            </div>
+                            
+                            <div id="judge-appointment" class="hidden">
+                                <div class="flex justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 200 120">
+                                        <rect x="20" y="40" width="160" height="80" fill="#d4b483" stroke="#8b4513" stroke-width="3"/>
+                                        <rect x="20" y="30" width="160" height="10" fill="#8b4513" stroke="#8b4513" stroke-width="1"/>
+                                        <rect x="90" y="10" width="20" height="30" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="30" y="50" width="140" height="60" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                        <text x="100" y="85" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="16">SUPREME COURT</text>
+                                        <text x="100" y="105" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="12">CALCUTTA</text>
+                                    </svg>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                    <div class="text-center">
+                                        <div id="chief-justice" class="h-24 border-2 border-dashed border-[#8b4513] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                            <span class="text-[#8b4513]">Chief Justice</span>
+                                        </div>
+                                        <p class="text-sm text-[#5c3b1c] mt-1">Click to appoint</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="judge-1" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                            <span class="text-[#a87c4f]">Judge 1</span>
+                                        </div>
+                                        <p class="text-sm text-[#5c3b1c] mt-1">Click to appoint</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="judge-2" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                            <span class="text-[#a87c4f]">Judge 2</span>
+                                        </div>
+                                        <p class="text-sm text-[#5c3b1c] mt-1">Click to appoint</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="judge-3" class="h-24 border-2 border-dashed border-[#a87c4f] rounded-lg flex items-center justify-center cursor-pointer bg-[#f5edd6]">
+                                            <span class="text-[#a87c4f]">Judge 3</span>
+                                        </div>
+                                        <p class="text-sm text-[#5c3b1c] mt-1">Click to appoint</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mb-4">
+                                    <p id="judge-count" class="text-[#8b4513]">0 of 4 Judges appointed</p>
+                                </div>
+                            </div>
+                            
+                            <button id="subtask-4-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-2 opacity-50" disabled>
+                                Confirm Supreme Court Establishment
+                            </button>
+                        </div>
+                    `
+                },
+                {
+                    title: "Ban Private Trade & Gifts",
+                    description: "Prohibit Company servants from engaging in private trade and accepting gifts or bribes.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Ban Private Trade & Gifts</h4>
+                            <p class="text-[#5c3b1c] mb-4">Click on items that should be banned for Company servants.</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                <div id="item-1" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="banned">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <rect x="20" y="30" width="60" height="40" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="25" y="35" width="50" height="30" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                        <path d="M20,30 L30,20 L90,20 L80,30 Z" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <path d="M80,30 L90,20 L90,60 L80,70 Z" fill="#c19a6b" stroke="#8b4513" stroke-width="2"/>
+                                        <text x="50" y="55" text-anchor="middle" fill="#8b4513" font-family="serif" font-size="10">TRADE</text>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Private Trade</p>
+                                </div>
+                                <div id="item-2" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="allowed">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="30" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <path d="M50,20 C60,35 70,35 80,50 C70,65 60,65 50,80 C40,65 30,65 20,50 C30,35 40,35 50,20 Z" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Maps</p>
+                                </div>
+                                <div id="item-3" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="banned">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <rect x="30" y="40" width="40" height="30" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="35" y="30" width="30" height="10" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <path d="M35,30 C35,20 65,20 65,30" fill="none" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="35" y="45" width="30" height="20" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                        <circle cx="50" cy="55" r="5" fill="#8b4513"/>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Gifts</p>
+                                </div>
+                                <div id="item-4" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="allowed">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <rect x="30" y="30" width="40" height="50" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="35" y="35" width="30" height="40" fill="#f5edd6" stroke="#8b4513" stroke-width="1"/>
+                                        <line x1="35" y1="45" x2="65" y2="45" stroke="#8b4513" stroke-width="1"/>
+                                        <line x1="35" y1="55" x2="65" y2="55" stroke="#8b4513" stroke-width="1"/>
+                                        <line x1="35" y1="65" x2="65" y2="65" stroke="#8b4513" stroke-width="1"/>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Reports</p>
+                                </div>
+                                <div id="item-5" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="allowed">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="60" r="25" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <path d="M50,35 C55,45 60,40 65,35 L65,25 C60,30 55,35 50,30 C45,35 40,30 35,25 L35,35 C40,40 45,45 50,35 Z" fill="#8b4513" stroke="#8b4513" stroke-width="1"/>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Fruits</p>
+                                </div>
+                                <div id="item-6" class="trade-item h-24 border border-[#a87c4f] rounded-lg flex flex-col items-center justify-center cursor-pointer bg-[#f5edd6] hover:bg-[#f0e8d1]" data-type="banned">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <rect x="25" y="40" width="50" height="30" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <circle cx="50" cy="55" r="10" fill="#8b4513"/>
+                                        <text x="50" y="58" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="10">£</text>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Bribes</p>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <p id="banned-count" class="text-[#8b4513]">0 of 3 items banned</p>
+                            </div>
+                            
+                            <button id="subtask-5-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-2 opacity-50" disabled>
+                                Confirm Trade & Gift Regulations
+                            </button>
+                        </div>
+                    `
+                },
+                {
+                    title: "Send Reports to British Crown",
+                    description: "Establish a system for sending regular reports to the British Parliament.",
+                    template: `
+                        <div class="bg-[#f9f5eb] p-4 rounded-lg border border-[#a87c4f]">
+                            <h4 class="fell-font text-xl text-[#8b4513] mb-2">Send Reports to British Crown</h4>
+                            <p class="text-[#5c3b1c] mb-4">Send annual reports on revenue, civil, and military affairs to the British Parliament.</p>
+                            
+                            <div class="flex justify-center mb-6">
+                                <div class="relative">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 300 200">
+                                        <rect x="50" y="50" width="200" height="120" fill="#f5edd6" stroke="#8b4513" stroke-width="3"/>
+                                        <line x1="70" y1="80" x2="230" y2="80" stroke="#8b4513" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <line x1="70" y1="100" x2="230" y2="100" stroke="#8b4513" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <line x1="70" y1="120" x2="230" y2="120" stroke="#8b4513" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <line x1="70" y1="140" x2="230" y2="140" stroke="#8b4513" stroke-width="1" stroke-dasharray="2,2"/>
+                                    </svg>
+                                    <div id="report-seal" class="absolute bottom-0 right-12 opacity-0 transition-opacity duration-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="40" fill="#8b4513"/>
+                                            <text x="50" y="45" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="12">BRITISH</text>
+                                            <text x="50" y="60" text-anchor="middle" fill="#f5edd6" font-family="serif" font-size="12">CROWN</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                                <button id="send-revenue-btn" class="btn-primary py-2 px-4 rounded-md flex-1">
+                                    Send Revenue Report
+                                </button>
+                                <button id="send-civil-btn" class="btn-primary py-2 px-4 rounded-md flex-1">
+                                    Send Civil Report
+                                </button>
+                                <button id="send-military-btn" class="btn-primary py-2 px-4 rounded-md flex-1">
+                                    Send Military Report
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <p id="report-count" class="text-[#8b4513]">0 of 3 Reports Sent</p>
+                            </div>
+                            
+                            <button id="subtask-6-complete" class="btn-primary w-full py-2 px-4 rounded-md mt-2 opacity-50" disabled>
+                                Confirm Reporting System
+                            </button>
+                        </div>
+                    `
+                }
+            ];
+            
+            // Functions
+            function updateProgress() {
+                const totalSteps = totalTasks + totalSubtasks;
+                const currentStep = currentTask - 1 + currentSubtask;
+                const progressPercentage = (currentStep / totalSteps) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            function showModal(title, message, callback = null) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                messageModal.classList.remove('hidden');
+                
+                if (callback) {
+                    modalClose.onclick = function() {
+                        messageModal.classList.add('hidden');
+                        callback();
+                    };
+                } else {
+                    modalClose.onclick = function() {
+                        messageModal.classList.add('hidden');
+                    };
+                }
+            }
+            
+            function activateTask(taskNum) {
+                document.querySelectorAll('.task-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.classList.add('opacity-50');
+                });
+                
+                const task = document.getElementById(`task-${taskNum}`);
+                task.classList.add('active');
+                task.classList.remove('opacity-50');
+                
+                document.querySelectorAll('.task-item button').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                });
+                
+                const taskBtn = document.getElementById(`task-${taskNum}-btn`);
+                taskBtn.disabled = false;
+                taskBtn.classList.remove('opacity-50');
+                
+                currentTask = taskNum;
+                updateProgress();
+            }
+            
+            function showSubtask(index) {
+                subtasksContainer.innerHTML = subtasks[index].template;
+                subtasksContainer.classList.remove('hidden');
+                currentSubtask = index + 1;
+                updateProgress();
+                
+                // Initialize subtask-specific functionality
+                if (index === 0) {
+                    initSubtask1();
+                } else if (index === 1) {
+                    initSubtask2();
+                } else if (index === 2) {
+                    initSubtask3();
+                } else if (index === 3) {
+                    initSubtask4();
+                } else if (index === 4) {
+                    initSubtask5();
+                } else if (index === 5) {
+                    initSubtask6();
+                }
+            }
+            
+            function completeSubtask() {
+                if (currentSubtask < totalSubtasks) {
+                    showSubtask(currentSubtask);
+                } else {
+                    // All subtasks completed
+                    subtasksContainer.classList.add('hidden');
+                    task3.classList.add('completed');
+                    showModal("All Tasks Completed!", "You have successfully implemented the Regulating Act of 1773, establishing British Parliamentary control over the East India Company.", function() {
+                        simulationScreen.classList.add('hidden');
+                        completionScreen.classList.remove('hidden');
+                    });
+                }
+            }
+            
+            // Subtask-specific initializations
+            function initSubtask1() {
+                const slider = document.getElementById('promotion-slider');
+                const governorTitle = document.getElementById('governor-title');
+                const completeBtn = document.getElementById('subtask-1-complete');
+                
+                slider.addEventListener('input', function() {
+                    const value = this.value;
+                    if (value < 33) {
+                        governorTitle.textContent = "Governor";
+                    } else if (value < 66) {
+                        governorTitle.textContent = "Governor of Bengal";
+                    } else {
+                        governorTitle.textContent = "Governor-General";
+                        completeBtn.disabled = false;
+                        completeBtn.classList.remove('opacity-50');
+                    }
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Governor-General Established!", "You have successfully elevated the Governor of Bengal to Governor-General of Bengal, establishing central authority.", completeSubtask);
+                });
+            }
+            
+            function initSubtask2() {
+                const slots = [
+                    document.getElementById('council-slot-1'),
+                    document.getElementById('council-slot-2'),
+                    document.getElementById('council-slot-3'),
+                    document.getElementById('council-slot-4')
+                ];
+                const councilCount = document.getElementById('council-count');
+                const completeBtn = document.getElementById('subtask-2-complete');
+                let addedCount = 0;
+                
+                slots.forEach((slot, index) => {
+                    slot.addEventListener('click', function() {
+                        if (!this.classList.contains('filled')) {
+                            this.classList.add('filled');
+                            this.innerHTML = `
+                                <div class="text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="35" r="20" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                        <rect x="30" y="55" width="40" height="30" fill="#d4b483" stroke="#8b4513" stroke-width="2"/>
+                                    </svg>
+                                    <p class="text-sm text-[#8b4513] mt-1">Council Member ${index + 1}</p>
+                                </div>
+                            `;
+                            addedCount++;
+                            councilCount.textContent = `${addedCount} of 4 Council Members added`;
+                            
+                            if (addedCount === 4) {
+                                completeBtn.disabled = false;
+                                completeBtn.classList.remove('opacity-50');
+                            }
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Executive Council Formed!", "You have successfully appointed 4 members to the Executive Council to assist the Governor-General.", completeSubtask);
+                });
+            }
+            
+            function initSubtask3() {
+                const bombayGovernor = document.getElementById('bombay-governor');
+                const madrasGovernor = document.getElementById('madras-governor');
+                const dropZone = document.getElementById('governor-general-authority');
+                const subordinationCount = document.getElementById('subordination-count');
+                const completeBtn = document.getElementById('subtask-3-complete');
+                let droppedCount = 0;
+                
+                // Drag and drop functionality
+                [bombayGovernor, madrasGovernor].forEach(governor => {
+                    governor.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData('text/plain', this.id);
+                        setTimeout(() => this.classList.add('opacity-50'), 0);
+                    });
+                    
+                    governor.addEventListener('dragend', function() {
+                        this.classList.remove('opacity-50');
+                    });
+                });
+                
+                dropZone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('active');
+                });
+                
+                dropZone.addEventListener('dragleave', function() {
+                    this.classList.remove('active');
+                });
+                
+                dropZone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('active');
+                    
+                    const id = e.dataTransfer.getData('text/plain');
+                    const governor = document.getElementById(id);
+                    
+                    if (governor && !governor.classList.contains('dropped')) {
+                        governor.classList.add('dropped');
+                        governor.classList.add('opacity-50');
+                        governor.setAttribute('draggable', 'false');
+                        
+                        // Add to drop zone
+                        const governorClone = governor.cloneNode(true);
+                        governorClone.classList.remove('opacity-50');
+                        governorClone.classList.add('scale-90', 'mb-2');
+                        
+                        if (dropZone.querySelector('p')) {
+                            dropZone.querySelector('p').remove();
+                        }
+                        
+                        dropZone.appendChild(governorClone);
+                        droppedCount++;
+                        subordinationCount.textContent = `${droppedCount} of 2 Governors subordinated`;
+                        
+                        if (droppedCount === 2) {
+                            completeBtn.disabled = false;
+                            completeBtn.classList.remove('opacity-50');
+                        }
+                    }
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Presidencies Subordinated!", "You have successfully placed the Bombay and Madras Presidencies under the authority of the Governor-General of Bengal.", completeSubtask);
+                });
+            }
+            
+            function initSubtask4() {
+                const establishCourtBtn = document.getElementById('establish-court-btn');
+                const judgeAppointment = document.getElementById('judge-appointment');
+                const chiefJustice = document.getElementById('chief-justice');
+                const judge1 = document.getElementById('judge-1');
+                const judge2 = document.getElementById('judge-2');
+                const judge3 = document.getElementById('judge-3');
+                const judgeCount = document.getElementById('judge-count');
+                const completeBtn = document.getElementById('subtask-4-complete');
+                let appointedCount = 0;
+                
+                establishCourtBtn.addEventListener('click', function() {
+                    this.disabled = true;
+                    this.textContent = "Supreme Court Established";
+                    this.classList.add('opacity-50');
+                    judgeAppointment.classList.remove('hidden');
+                });
+                
+                [chiefJustice, judge1, judge2, judge3].forEach((judge, index) => {
+                    judge.addEventListener('click', function() {
+                        if (!this.classList.contains('appointed')) {
+                            this.classList.add('appointed');
+                            this.classList.remove('border-dashed');
+                            this.classList.add('bg-[#d4b483]');
+                            
+                            if (index === 0) {
+                                this.innerHTML = `
+                                    <div class="text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="30" r="20" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                            <rect x="30" y="50" width="40" height="40" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                        </svg>
+                                        <p class="text-sm text-[#f5edd6] mt-1">Chief Justice</p>
+                                    </div>
+                                `;
+                            } else {
+                                this.innerHTML = `
+                                    <div class="text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="30" r="20" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                            <rect x="30" y="50" width="40" height="40" fill="#8b4513" stroke="#8b4513" stroke-width="2"/>
+                                        </svg>
+                                        <p class="text-sm text-[#f5edd6] mt-1">Judge ${index}</p>
+                                    </div>
+                                `;
+                            }
+                            
+                            appointedCount++;
+                            judgeCount.textContent = `${appointedCount} of 4 Judges appointed`;
+                            
+                            if (appointedCount === 4) {
+                                completeBtn.disabled = false;
+                                completeBtn.classList.remove('opacity-50');
+                            }
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Supreme Court Established!", "You have successfully established the Supreme Court at Calcutta with a Chief Justice and three judges.", completeSubtask);
+                });
+            }
+            
+            function initSubtask5() {
+                const tradeItems = document.querySelectorAll('.trade-item');
+                const bannedCount = document.getElementById('banned-count');
+                const completeBtn = document.getElementById('subtask-5-complete');
+                let clickedBanned = 0;
+                let totalBanned = 0;
+                
+                // Count total banned items
+                tradeItems.forEach(item => {
+                    if (item.dataset.type === 'banned') {
+                        totalBanned++;
+                    }
+                });
+                
+                tradeItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (!this.classList.contains('selected')) {
+                            this.classList.add('selected');
+                            
+                            if (this.dataset.type === 'banned') {
+                                this.classList.add('bg-[#d4b483]');
+                                clickedBanned++;
+                                bannedCount.textContent = `${clickedBanned} of ${totalBanned} items banned`;
+                                
+                                // Add ban symbol
+                                const banSymbol = document.createElement('div');
+                                banSymbol.className = 'absolute inset-0 flex items-center justify-center';
+                                banSymbol.innerHTML = `
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 100 100" class="text-[#8b4513] opacity-80">
+                                        <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="5"/>
+                                        <line x1="25" y1="25" x2="75" y2="75" stroke="currentColor" stroke-width="5"/>
+                                    </svg>
+                                `;
+                                this.style.position = 'relative';
+                                this.appendChild(banSymbol);
+                            } else {
+                                // Wrong item selected
+                                this.classList.add('bg-[#f0e8d1]');
+                                
+                                // Add bounce animation
+                                this.classList.add('animate-bounce');
+                                setTimeout(() => {
+                                    this.classList.remove('animate-bounce', 'selected');
+                                }, 1000);
+                                return;
+                            }
+                            
+                            if (clickedBanned === totalBanned) {
+                                completeBtn.disabled = false;
+                                completeBtn.classList.remove('opacity-50');
+                            }
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Trade & Gift Regulations Established!", "You have successfully banned Company servants from engaging in private trade and accepting gifts or bribes.", completeSubtask);
+                });
+            }
+            
+            function initSubtask6() {
+                const revenueBtn = document.getElementById('send-revenue-btn');
+                const civilBtn = document.getElementById('send-civil-btn');
+                const militaryBtn = document.getElementById('send-military-btn');
+                const reportCount = document.getElementById('report-count');
+                const reportSeal = document.getElementById('report-seal');
+                const completeBtn = document.getElementById('subtask-6-complete');
+                let sentCount = 0;
+                
+                [revenueBtn, civilBtn, militaryBtn].forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (!this.classList.contains('sent')) {
+                            this.classList.add('sent', 'opacity-50');
+                            this.disabled = true;
+                            
+                            // Show seal animation
+                            reportSeal.classList.remove('opacity-0');
+                            reportSeal.classList.add('opacity-100');
+                            
+                            setTimeout(() => {
+                                reportSeal.classList.add('opacity-0');
+                                reportSeal.classList.remove('opacity-100');
+                            }, 1000);
+                            
+                            sentCount++;
+                            reportCount.textContent = `${sentCount} of 3 Reports Sent`;
+                            
+                            if (sentCount === 3) {
+                                completeBtn.disabled = false;
+                                completeBtn.classList.remove('opacity-50');
+                            }
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', function() {
+                    showModal("Reporting System Established!", "You have successfully established a system for sending regular reports to the British Parliament.", completeSubtask);
+                });
+            }
+            
+            // Event Listeners
+            beginBtn.addEventListener('click', function() {
+                entryScreen.classList.add('hidden');
+                simulationScreen.classList.remove('hidden');
+                activateTask(1);
+            });
+            
+            task1Btn.addEventListener('click', function() {
+                showModal("Company Control Established!", "You've taken charge of the East India Company's operations in India. The Company is now under Parliamentary supervision.", function() {
+                    task1.classList.add('completed');
+                    activateTask(2);
+                });
+            });
+            
+            task2Btn.addEventListener('click', function() {
+                showModal("Political Role Acknowledged!", "The East India Company is no longer just a trader – it's now recognized as a governing entity with political and administrative powers in India.", function() {
+                    task2.classList.add('completed');
+                    activateTask(3);
+                    task3Btn.disabled = false;
+                    task3Btn.classList.remove('opacity-50');
+                });
+            });
+            
+            task3Btn.addEventListener('click', function() {
+                showSubtask(0);
+            });
+            
+            replayBtn.addEventListener('click', function() {
+                location.reload();
+            });
+            
+            nextActBtn.addEventListener('click', function() {
+                showModal("Coming Soon!", "The simulation for Pitt's India Act of 1784 will be available soon.");
+            });
+            
+            // Initialize
+            updateProgress();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'950b7c0d07017eea',t:'MTc1MDA4OTI1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
