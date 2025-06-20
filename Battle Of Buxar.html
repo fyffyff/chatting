@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of Buxar Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f172a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .title {
+            font-family: 'Cinzel', serif;
+        }
+
+        .battlefield {
+            background: linear-gradient(to bottom, #4b5320 0%, #2d3319 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .soldier {
+            position: absolute;
+            transition: all 0.5s ease;
+            font-size: 24px;
+            z-index: 10;
+        }
+
+        .indian-soldier {
+            color: #e11d48;
+        }
+
+        .british-soldier {
+            color: #1e40af;
+        }
+
+        .leader {
+            position: absolute;
+            bottom: 10px;
+            transition: all 0.5s ease;
+            transform-origin: bottom center;
+            z-index: 20;
+        }
+
+        .indian-leader {
+            left: 20%;
+        }
+
+        .british-leader {
+            right: 20%;
+        }
+
+        .dancing {
+            animation: dance 1s infinite alternate;
+        }
+
+        .crying {
+            animation: cry 1s infinite alternate;
+        }
+
+        @keyframes dance {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(-5deg); }
+        }
+
+        @keyframes cry {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(3deg); }
+            100% { transform: translateY(0) rotate(-3deg); }
+        }
+
+        .btn-war {
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-war:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-victory {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-victory:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .side-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            width: 0%;
+            transition: width 0.5s linear;
+        }
+
+        .emotion-bubble {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .sword-clash {
+            position: absolute;
+            font-size: 32px;
+            opacity: 0;
+            z-index: 15;
+        }
+
+        @keyframes clash {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+
+        .leader-container {
+            position: relative;
+            text-align: center;
+            margin: 0 10px;
+        }
+
+        .leader-emoji {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        .leader-name {
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="title text-4xl md:text-5xl text-center font-bold text-white mb-6">Battle of Buxar <span class="text-amber-500">1764</span></h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="side-panel p-4 md:p-6">
+                <h2 class="text-xl font-bold text-amber-500 mb-3">Indian Alliance</h2>
+                <ul class="text-white space-y-2">
+                    <li class="flex items-center"><span class="text-2xl mr-2">👑</span> Shah Alam II</li>
+                    <li class="flex items-center"><span class="text-2xl mr-2">🗡️</span> Shuja-ud-Daula</li>
+                    <li class="flex items-center"><span class="text-2xl mr-2">🛡️</span> Mir Qasim</li>
+                </ul>
+            </div>
+            
+            <div class="side-panel p-4 md:p-6 flex flex-col items-center justify-center">
+                <button id="startWarBtn" class="btn-war text-white font-bold py-3 px-8 rounded-lg text-xl w-full">
+                    Start War
+                </button>
+                <button id="victoryBtn" class="btn-victory text-white font-bold py-3 px-8 rounded-lg text-xl w-full mt-4 hidden">
+                    Declare British Victory
+                </button>
+            </div>
+            
+            <div class="side-panel p-4 md:p-6">
+                <h2 class="text-xl font-bold text-blue-500 mb-3">British Forces</h2>
+                <ul class="text-white space-y-2">
+                    <li class="flex items-center"><span class="text-2xl mr-2">🎖️</span> Hector Munro</li>
+                    <li class="flex items-center"><span class="text-2xl mr-2">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span> East India Company</li>
+                    <li class="flex items-center"><span class="text-2xl mr-2">🔫</span> British Army</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="battlefield h-96 rounded-xl mb-6 relative">
+            <!-- Leaders will be added here dynamically -->
+            <div id="indianLeaders" class="absolute bottom-4 left-4 flex"></div>
+            <div id="britishLeaders" class="absolute bottom-4 right-4 flex"></div>
+            
+            <!-- Battle progress indicator -->
+            <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-3/4 hidden" id="battleProgress">
+                <div class="text-center text-white mb-2">Battle Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="side-panel p-4 md:p-6">
+            <h2 class="text-xl font-bold text-white mb-3">Battle Information</h2>
+            <p class="text-gray-300" id="battleInfo">
+                The Battle of Buxar was fought on 22 October 1764 between the forces of the British East India Company, led by Hector Munro, and the combined armies of Mir Qasim, the Nawab of Bengal; Shuja-ud-Daula, the Nawab of Awadh; and Shah Alam II, the Mughal Emperor. Click "Start War" to begin the simulation.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const battlefield = document.querySelector('.battlefield');
+        const startWarBtn = document.getElementById('startWarBtn');
+        const victoryBtn = document.getElementById('victoryBtn');
+        const battleInfo = document.getElementById('battleInfo');
+        const battleProgress = document.getElementById('battleProgress');
+        const progressFill = document.getElementById('progressFill');
+        const indianLeaders = document.getElementById('indianLeaders');
+        const britishLeaders = document.getElementById('britishLeaders');
+        
+        let soldiers = [];
+        let battleInProgress = false;
+        let battleTimer;
+        let clashAnimations = [];
+        
+        // Create leaders
+        const indianLeadersData = [
+            { name: "Shah Alam II", emoji: "👑" },
+            { name: "Shuja-ud-Daula", emoji: "🗡️" },
+            { name: "Mir Qasim", emoji: "🛡️" }
+        ];
+        
+        const britishLeadersData = [
+            { name: "Hector Munro", emoji: "🎖️" },
+            { name: "East India Company", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" }
+        ];
+        
+        // Create leader elements
+        function createLeaders() {
+            indianLeadersData.forEach(leader => {
+                const container = document.createElement('div');
+                container.className = 'leader-container';
+                
+                const emoji = document.createElement('div');
+                emoji.className = 'leader-emoji';
+                emoji.textContent = leader.emoji;
+                
+                const name = document.createElement('div');
+                name.className = 'leader-name';
+                name.textContent = leader.name;
+                
+                const emotion = document.createElement('div');
+                emotion.className = 'emotion-bubble';
+                emotion.id = `emotion-${leader.name.replace(/\s+/g, '-').toLowerCase()}`;
+                
+                container.appendChild(emoji);
+                container.appendChild(name);
+                container.appendChild(emotion);
+                indianLeaders.appendChild(container);
+            });
+            
+            britishLeadersData.forEach(leader => {
+                const container = document.createElement('div');
+                container.className = 'leader-container';
+                
+                const emoji = document.createElement('div');
+                emoji.className = 'leader-emoji';
+                emoji.textContent = leader.emoji;
+                
+                const name = document.createElement('div');
+                name.className = 'leader-name';
+                name.textContent = leader.name;
+                
+                const emotion = document.createElement('div');
+                emotion.className = 'emotion-bubble';
+                emotion.id = `emotion-${leader.name.replace(/\s+/g, '-').toLowerCase()}`;
+                
+                container.appendChild(emoji);
+                container.appendChild(name);
+                container.appendChild(emotion);
+                britishLeaders.appendChild(container);
+            });
+        }
+        
+        // Create a soldier element
+        function createSoldier(type, x, y) {
+            const soldier = document.createElement('div');
+            soldier.className = `soldier ${type === 'indian' ? 'indian-soldier' : 'british-soldier'}`;
+            soldier.style.left = `${x}px`;
+            soldier.style.top = `${y}px`;
+            soldier.innerHTML = type === 'indian' ? '⚔️' : '🔫';
+            battlefield.appendChild(soldier);
+            return soldier;
+        }
+        
+        // Generate random position within battlefield
+        function randomPosition() {
+            const width = battlefield.offsetWidth;
+            const height = battlefield.offsetHeight;
+            return {
+                x: Math.random() * width,
+                y: Math.random() * (height - 80) + 20
+            };
+        }
+        
+        // Create clash animation
+        function createClash(x, y) {
+            const clash = document.createElement('div');
+            clash.className = 'sword-clash';
+            clash.style.left = `${x}px`;
+            clash.style.top = `${y}px`;
+            clash.innerHTML = '💥';
+            clash.style.animation = 'clash 0.5s forwards';
+            battlefield.appendChild(clash);
+            
+            setTimeout(() => {
+                clash.remove();
+            }, 500);
+        }
+        
+        // Move soldiers during battle and create clashes
+        function moveSoldiers() {
+            const battlefieldCenter = battlefield.offsetWidth / 2;
+            
+            soldiers.forEach(soldier => {
+                const isIndian = soldier.classList.contains('indian-soldier');
+                let newX, newY;
+                
+                // During battle, soldiers move toward center
+                if (isIndian) {
+                    newX = Math.random() * (battlefieldCenter - 50) + battlefieldCenter - 100;
+                } else {
+                    newX = Math.random() * (battlefieldCenter - 50) + battlefieldCenter + 50;
+                }
+                
+                newY = Math.random() * (battlefield.offsetHeight - 80) + 20;
+                
+                soldier.style.left = `${newX}px`;
+                soldier.style.top = `${newY}px`;
+                
+                // Create random clashes
+                if (Math.random() > 0.7) {
+                    createClash(
+                        battlefieldCenter + (Math.random() * 100 - 50),
+                        Math.random() * (battlefield.offsetHeight - 100) + 50
+                    );
+                }
+            });
+        }
+        
+        // Start the battle
+        function startBattle() {
+            if (battleInProgress) return;
+            
+            battleInProgress = true;
+            startWarBtn.disabled = true;
+            battleInfo.textContent = "The battle has begun! Soldiers from both sides are engaged in fierce combat.";
+            battleProgress.classList.remove('hidden');
+            
+            // Create soldiers
+            const indianStartX = 50;
+            const britishStartX = battlefield.offsetWidth - 50;
+            
+            for (let i = 0; i < 8; i++) {
+                const indianY = 50 + i * 30;
+                const britishY = 50 + i * 30;
+                
+                soldiers.push(createSoldier('indian', indianStartX, indianY));
+                soldiers.push(createSoldier('british', britishStartX, britishY));
+            }
+            
+            // Battle animation
+            let progress = 0;
+            battleTimer = setInterval(() => {
+                moveSoldiers();
+                progress += 1;
+                progressFill.style.width = `${progress * 10}%`;
+                
+                if (progress >= 10) {
+                    clearInterval(battleTimer);
+                    endBattle();
+                }
+            }, 1000);
+        }
+        
+        // End the battle
+        function endBattle() {
+            battleInfo.textContent = "After 10 seconds of intense fighting, the battle is over. The British forces have gained the upper hand. Click 'Declare British Victory' to announce the result.";
+            victoryBtn.classList.remove('hidden');
+            
+            // Remove some Indian soldiers to show they're losing
+            const indianSoldiers = document.querySelectorAll('.indian-soldier');
+            for (let i = 0; i < indianSoldiers.length; i += 2) {
+                indianSoldiers[i].remove();
+            }
+            
+            // Move remaining soldiers to their sides
+            const remainingIndianSoldiers = document.querySelectorAll('.indian-soldier');
+            const britishSoldiers = document.querySelectorAll('.british-soldier');
+            
+            remainingIndianSoldiers.forEach(soldier => {
+                soldier.style.left = `${Math.random() * battlefield.offsetWidth * 0.3}px`;
+            });
+            
+            britishSoldiers.forEach(soldier => {
+                soldier.style.left = `${battlefield.offsetWidth - Math.random() * battlefield.offsetWidth * 0.3}px`;
+            });
+        }
+        
+        // Declare victory
+        function declareVictory() {
+            victoryBtn.disabled = true;
+            battleInfo.textContent = "The British have won the Battle of Buxar! This victory established the British East India Company as a major power in northern India and led to the Treaty of Allahabad.";
+            
+            // British leaders dance with dancing emoji
+            document.querySelectorAll('#britishLeaders .leader-container').forEach(leader => {
+                leader.classList.add('dancing');
+                const emotion = leader.querySelector('.emotion-bubble');
+                emotion.textContent = '🕺';
+                emotion.style.opacity = '1';
+            });
+            
+            // Indian leaders cry with crying emoji
+            document.querySelectorAll('#indianLeaders .leader-container').forEach(leader => {
+                leader.classList.add('crying');
+                const emotion = leader.querySelector('.emotion-bubble');
+                emotion.textContent = '😭';
+                emotion.style.opacity = '1';
+            });
+            
+            // Remove remaining soldiers
+            document.querySelectorAll('.soldier').forEach(soldier => {
+                soldier.remove();
+            });
+        }
+        
+        // Event listeners
+        startWarBtn.addEventListener('click', startBattle);
+        victoryBtn.addEventListener('click', declareVictory);
+        
+        // Reset button
+        function resetBattle() {
+            // Clear all soldiers
+            document.querySelectorAll('.soldier').forEach(soldier => {
+                soldier.remove();
+            });
+            
+            // Reset leaders
+            document.querySelectorAll('.leader-container').forEach(leader => {
+                leader.classList.remove('dancing', 'crying');
+                const emotion = leader.querySelector('.emotion-bubble');
+                emotion.style.opacity = '0';
+            });
+            
+            // Reset UI
+            battleInProgress = false;
+            startWarBtn.disabled = false;
+            victoryBtn.classList.add('hidden');
+            victoryBtn.disabled = false;
+            battleProgress.classList.add('hidden');
+            progressFill.style.width = '0%';
+            battleInfo.textContent = "The Battle of Buxar was fought on 22 October 1764 between the forces of the British East India Company, led by Hector Munro, and the combined armies of Mir Qasim, the Nawab of Bengal; Shuja-ud-Daula, the Nawab of Awadh; and Shah Alam II, the Mughal Emperor. Click \"Start War\" to begin the simulation.";
+            
+            // Clear any running timers
+            clearInterval(battleTimer);
+            soldiers = [];
+        }
+        
+        // Add reset functionality
+        startWarBtn.addEventListener('dblclick', resetBattle);
+        
+        // Initialize leaders
+        createLeaders();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'952a526985e8e14a',t:'MTc1MDQxMjYwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
