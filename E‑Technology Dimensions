@@ -1,0 +1,1041 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Technology Dimensions in Agriculture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dimensions-overview {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .overview-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .overview-description {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dimension-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dimension-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .dimension-card.completed {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .dimension-card.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+        }
+
+        .dimension-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .dimension-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .dimension-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .dimension-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .task-section {
+            display: none;
+            padding: 40px;
+            border-top: 2px solid #eee;
+        }
+
+        .task-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .task-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .task-description {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Enablement Task Styles */
+        .aadhaar-interface {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .farmer-id-card {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: inline-block;
+        }
+
+        .toggle-container {
+            margin: 30px 0;
+        }
+
+        .toggle-label {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 200px;
+            height: 50px;
+            background: #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(150px);
+        }
+
+        .toggle-text {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: white;
+        }
+
+        .toggle-text.left {
+            left: 20px;
+        }
+
+        .toggle-text.right {
+            right: 20px;
+        }
+
+        /* Empowerment Task Styles */
+        .echoupal-interface {
+            background: #f0f8f0;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .echoupal-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .echoupal-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+        }
+
+        .price-chart {
+            display: none;
+            text-align: center;
+        }
+
+        .chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: end;
+            height: 200px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .chart-bar {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            width: 60px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .bar-label {
+            margin-top: 10px;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .practices-content {
+            display: none;
+        }
+
+        .practice-item {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .inputs-content {
+            display: none;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .input-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-item {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: grab;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .input-item:hover {
+            transform: scale(1.05);
+        }
+
+        .input-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .cart-area {
+            background: #f9f9f9;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .cart-area.drag-over {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+
+        .cart-item {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        /* Market Expansion Task Styles */
+        .marketplace-interface {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .marketplace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .produce-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .produce-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .produce-item {
+            background: linear-gradient(135deg, #8BC34A, #689F38);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .produce-item:hover {
+            transform: scale(1.05);
+        }
+
+        .produce-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .produce-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .ecommerce-platform {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 3px dashed transparent;
+            transition: all 0.3s ease;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ecommerce-platform.drag-over {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, #7B1FA2, #9C27B0);
+        }
+
+        .platform-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .listed-produce {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            max-width: 500px;
+            animation: popupSlide 0.3s ease-out;
+        }
+
+        @keyframes popupSlide {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .popup-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .popup-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .popup-message {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .close-popup {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-popup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dimensions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .marketplace-grid, .inputs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .echoupal-nav {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 E-Technology Dimensions</h1>
+            <p>Enablement • Empowerment • Market Expansion</p>
+        </div>
+
+        <div class="dimensions-overview">
+            <h2 class="overview-title">Three Pillars of Agricultural Transformation</h2>
+            <p class="overview-description">
+                Explore how e-technology revolutionizes agriculture through three key dimensions: 
+                enabling farmers with digital identity, empowering them with information and tools, 
+                and expanding their market reach through digital platforms.
+            </p>
+
+            <div class="dimensions-grid">
+                <div class="dimension-card" data-dimension="enablement">
+                    <div class="dimension-icon">🆔</div>
+                    <div class="dimension-title">Enablement</div>
+                    <div class="dimension-subtitle">Aadhaar Integration</div>
+                    <div class="dimension-description">
+                        Digital identity enables direct benefit transfer and eliminates middlemen in government schemes
+                    </div>
+                </div>
+
+                <div class="dimension-card" data-dimension="empowerment">
+                    <div class="dimension-icon">💻</div>
+                    <div class="dimension-title">Empowerment</div>
+                    <div class="dimension-subtitle">E-Choupal Platform</div>
+                    <div class="dimension-description">
+                        Information access and digital tools empower farmers to make informed decisions
+                    </div>
+                </div>
+
+                <div class="dimension-card" data-dimension="expansion">
+                    <div class="dimension-icon">🛒</div>
+                    <div class="dimension-title">Market Expansion</div>
+                    <div class="dimension-subtitle">E-commerce Integration</div>
+                    <div class="dimension-description">
+                        Digital marketplaces connect farmers directly with consumers nationwide
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enablement Task -->
+        <div class="task-section" id="enablementTask">
+            <div class="task-header">
+                <h3 class="task-title">🆔 Enablement: Aadhaar-Based Direct Benefit Transfer</h3>
+                <p class="task-description">Experience how digital identity enables direct government support</p>
+            </div>
+
+            <div class="aadhaar-interface">
+                <div class="farmer-id-card">
+                    <h4>👨‍🌾 Farmer Profile</h4>
+                    <p>Name: Rajesh Kumar</p>
+                    <p>Aadhaar: XXXX-XXXX-1234</p>
+                    <p>Farm Size: 5 acres</p>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-label">Link Farmer ID to Government Schemes</div>
+                    <div class="toggle-switch" id="aadhaarToggle">
+                        <div class="toggle-slider">🔗</div>
+                        <div class="toggle-text left">Link</div>
+                        <div class="toggle-text right">Linked</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; color: #666;">
+                    <p>Slide to activate Aadhaar-enabled Direct Benefit Transfer</p>
+                </div>
+            </div>
+
+            <button class="back-button" onclick="showOverview()">← Back to Overview</button>
+        </div>
+
+        <!-- Empowerment Task -->
+        <div class="task-section" id="empowermentTask">
+            <div class="task-header">
+                <h3 class="task-title">💻 Empowerment: E-Choupal Digital Platform</h3>
+                <p class="task-description">Explore how digital platforms empower farmers with information and tools</p>
+            </div>
+
+            <div class="echoupal-interface">
+                <div class="echoupal-header">
+                    <h3>🌾 E-Choupal Portal</h3>
+                    <p>Your Digital Agriculture Hub</p>
+                </div>
+
+                <div class="echoupal-nav">
+                    <button class="nav-button" onclick="showPrices()">📊 Market Prices</button>
+                    <button class="nav-button" onclick="showPractices()">📚 Best Practices</button>
+                    <button class="nav-button" onclick="showInputs()">🛒 Order Inputs</button>
+                </div>
+
+                <div class="content-area">
+                    <div id="defaultContent">
+                        <h4>Welcome to E-Choupal! 🎉</h4>
+                        <p>Click on any service above to explore how digital platforms empower farmers with:</p>
+                        <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
+                            <li>Real-time market price information</li>
+                            <li>Agricultural best practices and expert advice</li>
+                            <li>Direct input ordering capabilities</li>
+                            <li>Weather forecasts and crop advisories</li>
+                        </ul>
+                    </div>
+
+                    <div class="price-chart" id="priceChart">
+                        <h4>📊 Current Market Prices (₹/Quintal)</h4>
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 120px;">
+                                <div class="bar-value">₹2,400</div>
+                                <div class="bar-label">Wheat</div>
+                            </div>
+                            <div class="chart-bar" style="height: 80px;">
+                                <div class="bar-value">₹1,800</div>
+                                <div class="bar-label">Rice</div>
+                            </div>
+                            <div class="chart-bar" style="height: 100px;">
+                                <div class="bar-value">₹2,200</div>
+                                <div class="bar-label">Maize</div>
+                            </div>
+                            <div class="chart-bar" style="height: 150px;">
+                                <div class="bar-value">₹3,000</div>
+                                <div class="bar-label">Soybean</div>
+                            </div>
+                        </div>
+                        <p style="color: #666;">Updated: Today, 2:30 PM</p>
+                    </div>
+
+                    <div class="practices-content" id="practicesContent">
+                        <h4>📚 Agricultural Best Practices</h4>
+                        <div class="practice-item">
+                            <strong>🌱 Seed Treatment:</strong> Treat seeds with fungicide before sowing to prevent soil-borne diseases and improve germination rates.
+                        </div>
+                        <div class="practice-item">
+                            <strong>💧 Water Management:</strong> Use drip irrigation to save 30-50% water while maintaining optimal soil moisture levels.
+                        </div>
+                        <div class="practice-item">
+                            <strong>🧪 Soil Testing:</strong> Conduct soil tests every 2-3 years to determine nutrient requirements and pH levels for optimal crop growth.
+                        </div>
+                        <div class="practice-item">
+                            <strong>🐛 Integrated Pest Management:</strong> Combine biological, cultural, and chemical methods to control pests sustainably.
+                        </div>
+                    </div>
+
+                    <div class="inputs-content" id="inputsContent">
+                        <h4>🛒 Order Agricultural Inputs</h4>
+                        <p>Drag items to your cart to place an order:</p>
+                        <div class="inputs-grid">
+                            <div>
+                                <h5>Available Inputs:</h5>
+                                <div class="input-items">
+                                    <div class="input-item" draggable="true" data-input="seeds">🌱 Premium Seeds</div>
+                                    <div class="input-item" draggable="true" data-input="fertilizer">🧪 Organic Fertilizer</div>
+                                    <div class="input-item" draggable="true" data-input="pesticide">🛡️ Bio-Pesticide</div>
+                                    <div class="input-item" draggable="true" data-input="tools">🔧 Farm Tools</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5>Your Cart:</h5>
+                                <div class="cart-area" id="inputCart">
+                                    <p style="color: #666;">Drag items here to add to cart</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="back-button" onclick="showOverview()">← Back to Overview</button>
+        </div>
+
+        <!-- Market Expansion Task -->
+        <div class="task-section" id="expansionTask">
+            <div class="task-header">
+                <h3 class="task-title">🛒 Market Expansion: E-commerce Integration</h3>
+                <p class="task-description">Connect your produce with nationwide consumers through digital marketplaces</p>
+            </div>
+
+            <div class="marketplace-interface">
+                <div class="marketplace-grid">
+                    <div class="produce-section">
+                        <h4>🌾 Your Farm Produce</h4>
+                        <p>Drag your produce to the e-commerce platform:</p>
+                        <div class="produce-items">
+                            <div class="produce-item" draggable="true" data-produce="wheat">
+                                <div class="produce-icon">🌾</div>
+                                <div>Wheat</div>
+                            </div>
+                            <div class="produce-item" draggable="true" data-produce="rice">
+                                <div class="produce-icon">🍚</div>
+                                <div>Rice</div>
+                            </div>
+                            <div class="produce-item" draggable="true" data-produce="fruits">
+                                <div class="produce-icon">🍎</div>
+                                <div>Fresh Fruits</div>
+                            </div>
+                            <div class="produce-item" draggable="true" data-produce="vegetables">
+                                <div class="produce-icon">🥕</div>
+                                <div>Vegetables</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ecommerce-platform" id="ecommercePlatform">
+                        <div class="platform-icon">🛒</div>
+                        <h4>E-Commerce Marketplace</h4>
+                        <p>Drop produce here to list nationwide</p>
+                        <div id="listedItems" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="back-button" onclick="showOverview()">← Back to Overview</button>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="success-popup" id="successPopup">
+        <div class="popup-icon" id="popupIcon">✅</div>
+        <div class="popup-title" id="popupTitle">Success!</div>
+        <div class="popup-message" id="popupMessage">Message content here</div>
+        <button class="close-popup" onclick="closePopup()">Continue</button>
+    </div>
+
+    <script>
+        let completedDimensions = new Set();
+        let draggedElement = null;
+        let cartItems = 0;
+        let listedProduce = 0;
+
+        // Dimension card click handlers
+        document.querySelectorAll('.dimension-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const dimension = this.getAttribute('data-dimension');
+                showDimension(dimension);
+            });
+        });
+
+        function showDimension(dimension) {
+            // Hide overview
+            document.querySelector('.dimensions-overview').style.display = 'none';
+            
+            // Hide all task sections
+            document.querySelectorAll('.task-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected dimension
+            document.getElementById(dimension + 'Task').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showOverview() {
+            // Hide all task sections
+            document.querySelectorAll('.task-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show overview
+            document.querySelector('.dimensions-overview').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Enablement Task - Aadhaar Toggle
+        document.getElementById('aadhaarToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            if (this.classList.contains('active')) {
+                setTimeout(() => {
+                    showPopup(
+                        '🆔',
+                        'Aadhaar Integration Successful!',
+                        'Aadhaar-enabled DBT ensures government subsidies reach the farmer directly (no middlemen). Direct benefit transfer activated for fertilizer subsidies, crop insurance, and PM-KISAN payments.'
+                    );
+                    markCompleted('enablement');
+                }, 500);
+            }
+        });
+
+        // Empowerment Task - E-Choupal Functions
+        function showPrices() {
+            hideAllContent();
+            document.getElementById('priceChart').style.display = 'block';
+        }
+
+        function showPractices() {
+            hideAllContent();
+            document.getElementById('practicesContent').style.display = 'block';
+        }
+
+        function showInputs() {
+            hideAllContent();
+            document.getElementById('inputsContent').style.display = 'block';
+            setupInputDragDrop();
+        }
+
+        function hideAllContent() {
+            document.getElementById('defaultContent').style.display = 'none';
+            document.getElementById('priceChart').style.display = 'none';
+            document.getElementById('practicesContent').style.display = 'none';
+            document.getElementById('inputsContent').style.display = 'none';
+        }
+
+        function setupInputDragDrop() {
+            const inputItems = document.querySelectorAll('.input-item');
+            const cart = document.getElementById('inputCart');
+
+            inputItems.forEach(item => {
+                item.addEventListener('dragstart', function() {
+                    draggedElement = this;
+                    this.classList.add('dragging');
+                });
+
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+            });
+
+            cart.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+
+            cart.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+
+            cart.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+
+                if (draggedElement) {
+                    const inputType = draggedElement.getAttribute('data-input');
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'cart-item';
+                    cartItem.textContent = draggedElement.textContent;
+                    
+                    this.appendChild(cartItem);
+                    draggedElement.remove();
+                    cartItems++;
+
+                    if (cartItems === 1) {
+                        this.querySelector('p').style.display = 'none';
+                    }
+
+                    if (cartItems === 4) {
+                        setTimeout(() => {
+                            showPopup(
+                                '💻',
+                                'E-Choupal Empowerment Complete!',
+                                'You have successfully used E-Choupal to access market prices, learn best practices, and order agricultural inputs directly. This digital platform empowers farmers with information and eliminates intermediaries.'
+                            );
+                            markCompleted('empowerment');
+                        }, 500);
+                    }
+                }
+            });
+        }
+
+        // Market Expansion Task - E-commerce Drag & Drop
+        document.addEventListener('DOMContentLoaded', function() {
+            setupMarketplaceDragDrop();
+        });
+
+        function setupMarketplaceDragDrop() {
+            const produceItems = document.querySelectorAll('.produce-item');
+            const platform = document.getElementById('ecommercePlatform');
+            const listedItems = document.getElementById('listedItems');
+
+            produceItems.forEach(item => {
+                item.addEventListener('dragstart', function() {
+                    draggedElement = this;
+                    this.classList.add('dragging');
+                });
+
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+            });
+
+            platform.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+
+            platform.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+
+            platform.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+
+                if (draggedElement) {
+                    const produceType = draggedElement.getAttribute('data-produce');
+                    const listedItem = document.createElement('div');
+                    listedItem.className = 'listed-produce';
+                    listedItem.textContent = draggedElement.textContent;
+                    
+                    listedItems.appendChild(listedItem);
+                    draggedElement.remove();
+                    listedProduce++;
+
+                    const messages = {
+                        wheat: 'Wheat listed! Connecting to bulk buyers nationwide.',
+                        rice: 'Rice available online! Premium quality reaches urban markets.',
+                        fruits: 'Fresh fruits listed! Direct farm-to-consumer delivery enabled.',
+                        vegetables: 'Vegetables online! Eliminating middlemen, maximizing profits.'
+                    };
+
+                    setTimeout(() => {
+                        showPopup(
+                            '🛒',
+                            'Market Expansion Success!',
+                            messages[produceType] + ' Your produce can now reach consumers nationwide through digital marketplaces!'
+                        );
+                    }, 500);
+
+                    if (listedProduce === 4) {
+                        setTimeout(() => {
+                            markCompleted('expansion');
+                        }, 2000);
+                    }
+                }
+            });
+        }
+
+        function showPopup(icon, title, message) {
+            document.getElementById('popupIcon').textContent = icon;
+            document.getElementById('popupTitle').textContent = title;
+            document.getElementById('popupMessage').textContent = message;
+            document.getElementById('popupOverlay').style.display = 'block';
+            document.getElementById('successPopup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+            document.getElementById('successPopup').style.display = 'none';
+        }
+
+        function markCompleted(dimension) {
+            completedDimensions.add(dimension);
+            const card = document.querySelector(`[data-dimension="${dimension}"]`);
+            card.classList.add('completed');
+
+            if (completedDimensions.size === 3) {
+                setTimeout(() => {
+                    showPopup(
+                        '🎉',
+                        'All Dimensions Completed!',
+                        'Congratulations! You have experienced all three dimensions of E-Technology in Agriculture: Enablement through digital identity, Empowerment through information platforms, and Market Expansion through e-commerce. These technologies work together to transform traditional farming into a modern, connected, and profitable enterprise.'
+                    );
+                }, 1000);
+            }
+        }
+
+        // Close popup when clicking overlay
+        document.getElementById('popupOverlay').addEventListener('click', closePopup);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95ea5e4357aadf6e',t:'MTc1MjQyNjM1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
