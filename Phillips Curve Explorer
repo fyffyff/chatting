@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Phillips Curve Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .curve-point {
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+        
+        .curve-point:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+        }
+        
+        .policy-chip {
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+        
+        .policy-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .axis-label {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .axis-label:hover {
+            fill: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .slider-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+        }
+        
+        .modern-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+        
+        .modern-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .floating-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .curve-animation {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawCurve 2s ease-in-out forwards;
+        }
+        
+        @keyframes drawCurve {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.33);
+            }
+            80%, 100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent mb-4">
+                Phillips Curve Explorer
+            </h1>
+            <p class="text-xl text-gray-300">Interactive Economic Trade-off Simulation for UPSC Aspirants</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Graph Area -->
+            <div class="lg:col-span-2">
+                <div class="floating-panel p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-gray-800">Live Curve Canvas</h2>
+                        <div class="flex gap-2">
+                            <button id="clearBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                Clear
+                            </button>
+                            <button id="exportBtn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <svg id="mainGraph" width="100%" height="400" viewBox="0 0 600 400" class="border-2 border-gray-200 rounded-lg bg-white">
+                        <!-- Grid lines -->
+                        <defs>
+                            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                        
+                        <!-- Axes -->
+                        <line x1="80" y1="350" x2="550" y2="350" stroke="#333" stroke-width="2"/>
+                        <line x1="80" y1="350" x2="80" y2="50" stroke="#333" stroke-width="2"/>
+                        
+                        <!-- Axis Labels -->
+                        <text x="315" y="380" text-anchor="middle" class="axis-label fill-gray-700 text-sm font-medium" data-info="Unemployment Rate measures the percentage of labor force without jobs">
+                            Unemployment Rate (%)
+                        </text>
+                        <text x="30" y="200" text-anchor="middle" transform="rotate(-90 30 200)" class="axis-label fill-gray-700 text-sm font-medium" data-info="Inflation Rate measures the rate of increase in price levels">
+                            Inflation Rate (%)
+                        </text>
+                        
+                        <!-- Scale markers -->
+                        <g id="scaleMarkers"></g>
+                        
+                        <!-- Phillips Curve -->
+                        <path id="phillipsCurve" d="" stroke="#3b82f6" stroke-width="3" fill="none" class="curve-animation"/>
+                        
+                        <!-- Interactive points -->
+                        <g id="curvePoints"></g>
+                        
+                        <!-- Tooltip -->
+                        <g id="tooltip" class="tooltip" style="opacity: 0;">
+                            <rect x="0" y="0" width="120" height="30" rx="5" fill="rgba(0,0,0,0.8)"/>
+                            <text x="60" y="20" text-anchor="middle" fill="white" font-size="12"></text>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Dual Sliders -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div class="slider-container">
+                        <label class="block text-white font-semibold mb-2">
+                            <span class="cursor-pointer hover:text-yellow-200" data-info="Higher inflation typically correlates with lower unemployment">
+                                Inflation Rate: <span id="inflationValue">3.0</span>%
+                            </span>
+                        </label>
+                        <input type="range" id="inflationSlider" min="0" max="10" step="0.1" value="3" class="modern-slider w-full">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label class="block text-white font-semibold mb-2">
+                            <span class="cursor-pointer hover:text-yellow-200" data-info="Lower unemployment often leads to higher inflation due to wage pressures">
+                                Unemployment Rate: <span id="unemploymentValue">6.0</span>%
+                            </span>
+                        </label>
+                        <input type="range" id="unemploymentSlider" min="0" max="15" step="0.1" value="6" class="modern-slider w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policy Tools Panel -->
+            <div class="space-y-6">
+                <div class="floating-panel p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Policy Tools</h3>
+                    <div class="space-y-3">
+                        <div class="policy-chip bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg cursor-grab" 
+                             draggable="true" data-policy="fiscal-stimulus" data-effect="shift-left">
+                            <div class="font-semibold">💰 Fiscal Stimulus</div>
+                            <div class="text-xs opacity-90">Increases inflation, reduces unemployment</div>
+                        </div>
+                        
+                        <div class="policy-chip bg-gradient-to-r from-red-500 to-red-600 text-white p-3 rounded-lg cursor-grab" 
+                             draggable="true" data-policy="tight-money" data-effect="shift-right">
+                            <div class="font-semibold">🏦 Tight Monetary Policy</div>
+                            <div class="text-xs opacity-90">Reduces inflation, increases unemployment</div>
+                        </div>
+                        
+                        <div class="policy-chip bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg cursor-grab" 
+                             draggable="true" data-policy="supply-shock" data-effect="shift-up">
+                            <div class="font-semibold">⚡ Supply Shock</div>
+                            <div class="text-xs opacity-90">Increases both inflation and unemployment</div>
+                        </div>
+                        
+                        <div class="policy-chip bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg cursor-grab" 
+                             draggable="true" data-policy="productivity-growth" data-effect="shift-down">
+                            <div class="font-semibold">📈 Productivity Growth</div>
+                            <div class="text-xs opacity-90">Reduces both inflation and unemployment</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Information Panel -->
+                <div class="floating-panel p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Info</h3>
+                    <div id="infoPanel" class="text-gray-600 text-sm">
+                        <p class="mb-2">🎯 <strong>Click and drag</strong> on the graph to create curve points</p>
+                        <p class="mb-2">🎚️ <strong>Use sliders</strong> to explore trade-offs</p>
+                        <p class="mb-2">🏷️ <strong>Drag policy tools</strong> onto the graph</p>
+                        <p>💡 <strong>Hover over labels</strong> for detailed explanations</p>
+                    </div>
+                </div>
+
+                <!-- Curve Builder -->
+                <div class="floating-panel p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Curve Annotations</h3>
+                    <textarea id="annotationText" placeholder="Add your notes about this curve..." 
+                              class="w-full p-3 border border-gray-300 rounded-lg resize-none text-gray-700" rows="3"></textarea>
+                    <button id="addAnnotation" class="mt-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors w-full">
+                        Add Annotation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating tooltip -->
+    <div id="floatingTooltip" class="tooltip"></div>
+
+    <script>
+        class PhillipsCurveExplorer {
+            constructor() {
+                this.svg = document.getElementById('mainGraph');
+                this.curve = document.getElementById('phillipsCurve');
+                this.pointsGroup = document.getElementById('curvePoints');
+                this.points = [];
+                this.isDragging = false;
+                this.currentPoint = null;
+                
+                this.initializeGraph();
+                this.setupEventListeners();
+                this.drawInitialCurve();
+                this.setupSliders();
+                this.setupPolicyTools();
+                this.setupTooltips();
+            }
+            
+            initializeGraph() {
+                // Draw scale markers
+                const scaleGroup = document.getElementById('scaleMarkers');
+                
+                // X-axis markers (unemployment)
+                for (let i = 0; i <= 15; i += 3) {
+                    const x = 80 + (i / 15) * 470;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x);
+                    line.setAttribute('y1', 345);
+                    line.setAttribute('x2', x);
+                    line.setAttribute('y2', 355);
+                    line.setAttribute('stroke', '#666');
+                    line.setAttribute('stroke-width', '1');
+                    scaleGroup.appendChild(line);
+                    
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', 370);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('font-size', '12');
+                    text.setAttribute('fill', '#666');
+                    text.textContent = i;
+                    scaleGroup.appendChild(text);
+                }
+                
+                // Y-axis markers (inflation)
+                for (let i = 0; i <= 10; i += 2) {
+                    const y = 350 - (i / 10) * 300;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', 75);
+                    line.setAttribute('y1', y);
+                    line.setAttribute('x2', 85);
+                    line.setAttribute('y2', y);
+                    line.setAttribute('stroke', '#666');
+                    line.setAttribute('stroke-width', '1');
+                    scaleGroup.appendChild(line);
+                    
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', 70);
+                    text.setAttribute('y', y + 4);
+                    text.setAttribute('text-anchor', 'end');
+                    text.setAttribute('font-size', '12');
+                    text.setAttribute('fill', '#666');
+                    text.textContent = i;
+                    scaleGroup.appendChild(text);
+                }
+            }
+            
+            drawInitialCurve() {
+                // Draw classic Phillips curve
+                const path = 'M 120 80 Q 200 100, 300 150 Q 400 200, 500 300';
+                this.curve.setAttribute('d', path);
+                
+                // Add some initial points
+                this.addPoint(150, 120, 'Point A');
+                this.addPoint(250, 160, 'Point B');
+                this.addPoint(400, 250, 'Point C');
+            }
+            
+            addPoint(x, y, label) {
+                const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                point.setAttribute('cx', x);
+                point.setAttribute('cy', y);
+                point.setAttribute('r', '8');
+                point.setAttribute('fill', '#3b82f6');
+                point.setAttribute('stroke', 'white');
+                point.setAttribute('stroke-width', '2');
+                point.classList.add('curve-point');
+                point.setAttribute('data-label', label);
+                
+                // Add pulsing ring effect
+                const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                ring.setAttribute('cx', x);
+                ring.setAttribute('cy', y);
+                ring.setAttribute('r', '8');
+                ring.setAttribute('fill', 'none');
+                ring.setAttribute('stroke', '#3b82f6');
+                ring.setAttribute('stroke-width', '2');
+                ring.setAttribute('opacity', '0.6');
+                ring.classList.add('pulse-ring');
+                
+                this.pointsGroup.appendChild(ring);
+                this.pointsGroup.appendChild(point);
+                
+                this.points.push({ element: point, x, y, label });
+                this.setupPointInteraction(point);
+            }
+            
+            setupPointInteraction(point) {
+                point.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.currentPoint = point;
+                    e.preventDefault();
+                });
+                
+                point.addEventListener('click', (e) => {
+                    if (!this.isDragging) {
+                        this.showPointInfo(point);
+                    }
+                });
+            }
+            
+            showPointInfo(point) {
+                const label = point.getAttribute('data-label');
+                const x = parseFloat(point.getAttribute('cx'));
+                const y = parseFloat(point.getAttribute('cy'));
+                
+                // Convert to economic values
+                const unemployment = ((x - 80) / 470 * 15).toFixed(1);
+                const inflation = ((350 - y) / 300 * 10).toFixed(1);
+                
+                const info = `${label}: ${unemployment}% unemployment, ${inflation}% inflation`;
+                document.getElementById('infoPanel').innerHTML = `
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <strong>${info}</strong>
+                        <p class="text-xs mt-1">This point represents a specific economic state on the Phillips Curve trade-off.</p>
+                    </div>
+                `;
+            }
+            
+            setupEventListeners() {
+                this.svg.addEventListener('mousemove', (e) => {
+                    if (this.isDragging && this.currentPoint) {
+                        const rect = this.svg.getBoundingClientRect();
+                        const x = (e.clientX - rect.left) * (600 / rect.width);
+                        const y = (e.clientY - rect.top) * (400 / rect.height);
+                        
+                        // Constrain to graph area
+                        const constrainedX = Math.max(80, Math.min(550, x));
+                        const constrainedY = Math.max(50, Math.min(350, y));
+                        
+                        this.currentPoint.setAttribute('cx', constrainedX);
+                        this.currentPoint.setAttribute('cy', constrainedY);
+                        
+                        this.updateCurve();
+                    }
+                });
+                
+                this.svg.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                    this.currentPoint = null;
+                });
+                
+                this.svg.addEventListener('click', (e) => {
+                    if (!this.isDragging) {
+                        const rect = this.svg.getBoundingClientRect();
+                        const x = (e.clientX - rect.left) * (600 / rect.width);
+                        const y = (e.clientY - rect.top) * (400 / rect.height);
+                        
+                        if (x > 80 && x < 550 && y > 50 && y < 350) {
+                            const label = `Point ${String.fromCharCode(65 + this.points.length)}`;
+                            this.addPoint(x, y, label);
+                            this.updateCurve();
+                        }
+                    }
+                });
+                
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearGraph();
+                });
+                
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    this.exportGraph();
+                });
+                
+                document.getElementById('addAnnotation').addEventListener('click', () => {
+                    this.addAnnotation();
+                });
+            }
+            
+            updateCurve() {
+                if (this.points.length < 2) return;
+                
+                // Sort points by x coordinate
+                const sortedPoints = this.points.sort((a, b) => 
+                    parseFloat(a.element.getAttribute('cx')) - parseFloat(b.element.getAttribute('cx'))
+                );
+                
+                let path = `M ${sortedPoints[0].element.getAttribute('cx')} ${sortedPoints[0].element.getAttribute('cy')}`;
+                
+                for (let i = 1; i < sortedPoints.length; i++) {
+                    const x = sortedPoints[i].element.getAttribute('cx');
+                    const y = sortedPoints[i].element.getAttribute('cy');
+                    
+                    if (i === 1) {
+                        path += ` Q ${x} ${y}`;
+                    } else {
+                        path += `, ${x} ${y}`;
+                    }
+                }
+                
+                this.curve.setAttribute('d', path);
+            }
+            
+            setupSliders() {
+                const inflationSlider = document.getElementById('inflationSlider');
+                const unemploymentSlider = document.getElementById('unemploymentSlider');
+                const inflationValue = document.getElementById('inflationValue');
+                const unemploymentValue = document.getElementById('unemploymentValue');
+                
+                inflationSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    inflationValue.textContent = value.toFixed(1);
+                    this.updateSliderPoint('inflation', value);
+                });
+                
+                unemploymentSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    unemploymentValue.textContent = value.toFixed(1);
+                    this.updateSliderPoint('unemployment', value);
+                });
+            }
+            
+            updateSliderPoint(type, value) {
+                // Remove existing slider point
+                const existingPoint = document.getElementById('sliderPoint');
+                if (existingPoint) existingPoint.remove();
+                
+                let x, y;
+                if (type === 'inflation') {
+                    y = 350 - (value / 10) * 300;
+                    // Calculate corresponding unemployment from curve
+                    x = this.getUnemploymentFromInflation(value);
+                } else {
+                    x = 80 + (value / 15) * 470;
+                    // Calculate corresponding inflation from curve
+                    y = this.getInflationFromUnemployment(value);
+                }
+                
+                // Create slider point
+                const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                point.setAttribute('id', 'sliderPoint');
+                point.setAttribute('cx', x);
+                point.setAttribute('cy', y);
+                point.setAttribute('r', '10');
+                point.setAttribute('fill', '#f59e0b');
+                point.setAttribute('stroke', 'white');
+                point.setAttribute('stroke-width', '3');
+                point.classList.add('glow');
+                
+                this.pointsGroup.appendChild(point);
+            }
+            
+            getUnemploymentFromInflation(inflation) {
+                // Simplified calculation - in reality this would use the actual curve
+                return 80 + ((10 - inflation) / 10) * 470;
+            }
+            
+            getInflationFromUnemployment(unemployment) {
+                // Simplified calculation - in reality this would use the actual curve
+                return 350 - ((15 - unemployment) / 15) * 300;
+            }
+            
+            setupPolicyTools() {
+                const policyChips = document.querySelectorAll('.policy-chip');
+                
+                policyChips.forEach(chip => {
+                    chip.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', chip.dataset.policy);
+                        e.dataTransfer.setData('effect', chip.dataset.effect);
+                    });
+                });
+                
+                this.svg.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                
+                this.svg.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const policy = e.dataTransfer.getData('text/plain');
+                    const effect = e.dataTransfer.getData('effect');
+                    
+                    this.applyPolicyEffect(effect, policy);
+                });
+            }
+            
+            applyPolicyEffect(effect, policy) {
+                const messages = {
+                    'fiscal-stimulus': 'Fiscal stimulus applied! Curve shifts left - lower unemployment, higher inflation.',
+                    'tight-money': 'Tight monetary policy applied! Curve shifts right - higher unemployment, lower inflation.',
+                    'supply-shock': 'Supply shock applied! Curve shifts up - stagflation occurs.',
+                    'productivity-growth': 'Productivity growth applied! Curve shifts down - both metrics improve.'
+                };
+                
+                document.getElementById('infoPanel').innerHTML = `
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <strong>Policy Applied!</strong>
+                        <p class="text-sm mt-1">${messages[policy]}</p>
+                    </div>
+                `;
+                
+                // Animate curve transformation
+                this.animateCurveShift(effect);
+            }
+            
+            animateCurveShift(effect) {
+                const shifts = {
+                    'shift-left': () => this.shiftCurve(-30, 0),
+                    'shift-right': () => this.shiftCurve(30, 0),
+                    'shift-up': () => this.shiftCurve(0, -30),
+                    'shift-down': () => this.shiftCurve(0, 30)
+                };
+                
+                if (shifts[effect]) {
+                    shifts[effect]();
+                }
+            }
+            
+            shiftCurve(deltaX, deltaY) {
+                this.points.forEach(point => {
+                    const currentX = parseFloat(point.element.getAttribute('cx'));
+                    const currentY = parseFloat(point.element.getAttribute('cy'));
+                    
+                    point.element.setAttribute('cx', currentX + deltaX);
+                    point.element.setAttribute('cy', currentY + deltaY);
+                });
+                
+                this.updateCurve();
+            }
+            
+            setupTooltips() {
+                const tooltip = document.getElementById('floatingTooltip');
+                const elements = document.querySelectorAll('[data-info]');
+                
+                elements.forEach(element => {
+                    element.addEventListener('mouseenter', (e) => {
+                        tooltip.textContent = e.target.dataset.info;
+                        tooltip.style.opacity = '1';
+                    });
+                    
+                    element.addEventListener('mousemove', (e) => {
+                        tooltip.style.left = e.pageX + 10 + 'px';
+                        tooltip.style.top = e.pageY - 30 + 'px';
+                    });
+                    
+                    element.addEventListener('mouseleave', () => {
+                        tooltip.style.opacity = '0';
+                    });
+                });
+            }
+            
+            clearGraph() {
+                this.pointsGroup.innerHTML = '';
+                this.points = [];
+                this.curve.setAttribute('d', '');
+                document.getElementById('infoPanel').innerHTML = `
+                    <p class="mb-2">🎯 <strong>Click and drag</strong> on the graph to create curve points</p>
+                    <p class="mb-2">🎚️ <strong>Use sliders</strong> to explore trade-offs</p>
+                    <p class="mb-2">🏷️ <strong>Drag policy tools</strong> onto the graph</p>
+                    <p>💡 <strong>Hover over labels</strong> for detailed explanations</p>
+                `;
+            }
+            
+            exportGraph() {
+                const svgData = new XMLSerializer().serializeToString(this.svg);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const link = document.createElement('a');
+                    link.download = 'phillips-curve.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                };
+                
+                img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+            }
+            
+            addAnnotation() {
+                const text = document.getElementById('annotationText').value;
+                if (text.trim()) {
+                    const annotation = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    annotation.setAttribute('x', 300);
+                    annotation.setAttribute('y', 100);
+                    annotation.setAttribute('fill', '#666');
+                    annotation.setAttribute('font-size', '14');
+                    annotation.setAttribute('text-anchor', 'middle');
+                    annotation.textContent = text;
+                    
+                    this.svg.appendChild(annotation);
+                    document.getElementById('annotationText').value = '';
+                }
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new PhillipsCurveExplorer();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'965b6e9665462982',t:'MTc1MzYxMTkxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
